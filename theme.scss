@@ -1,0 +1,83 @@
+/*-- scss:defaults --*/
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+$font-family-sans-serif: "Charter", "EB Garamond", Georgia, serif;
+$font-family-monospace: "IBM Plex Mono", "Menlo", monospace;
+
+$paper:  #faf8f2;
+$ink:    #191710;
+$rule:   #d5cfbf;
+$muted:  #7b7568;
+$g3:     #6d6759;
+$accent: #b3261e;
+
+$backgroundColor: $paper;
+$body-color: $ink;
+$body-bg: $paper;
+$link-color: $accent;
+$presentation-heading-font: "Charter", "EB Garamond", Georgia, serif;
+$presentation-heading-color: $ink;
+$presentation-heading-font-weight: 400;
+$presentation-font-size-root: 30px;
+$presentation-h1-font-size: 2.2em;
+$presentation-h2-font-size: 1.45em;
+$code-block-bg: transparent;
+
+/*-- scss:rules --*/
+.reveal {
+  .slide-number { font-family: $font-family-monospace; font-size: 13px;
+                  color: $g3; background: transparent; }
+
+  h1, h2 { letter-spacing: -0.01em; }
+  h2 { border-bottom: 1px solid $rule; padding-bottom: 0.25em;
+       margin-bottom: 0.55em; }
+
+  .eyebrow { font-family: $font-family-monospace; font-size: 0.42em;
+             letter-spacing: 0.14em; text-transform: uppercase;
+             color: $accent; margin: 0 0 0.9em 0;
+             span { color: $muted; letter-spacing: 0.06em;
+                    text-transform: none; margin-left: 1.2em; } }
+
+  p, li { line-height: 1.45; }
+  .lede { font-size: 0.78em; max-width: 62ch; }
+  .small { font-size: 0.62em; color: $muted; }
+
+  blockquote { border-left: 2px solid $accent; background: transparent;
+               box-shadow: none; font-style: italic; padding: 0 0 0 0.7em;
+               margin: 0.6em 0; font-size: 0.85em;
+               .cite { display: block; font-style: normal; font-size: 0.55em;
+                       font-family: $font-family-monospace; color: $muted;
+                       letter-spacing: 0.08em; text-transform: uppercase;
+                       margin-top: 0.5em; } }
+
+  .panel-lab { font-family: $font-family-monospace; font-size: 0.42em;
+               letter-spacing: 0.08em; text-transform: uppercase;
+               color: $muted; margin-bottom: 0.2em; }
+  .panel-lab.bad { color: $accent; }
+
+  .caption, figcaption { font-family: $font-family-monospace; font-size: 0.42em;
+               color: $muted; line-height: 1.5; text-align: left; }
+
+  table { font-size: 0.58em;
+    th { font-family: $font-family-monospace; font-size: 0.72em;
+         font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+         color: $muted; border-bottom: 1px solid $rule; }
+    td { border-bottom: 1px solid mix($rule, $paper, 55%); }
+  }
+
+  .kill td:first-child { color: $ink; }
+  .kill td:last-child  { color: $muted; }
+
+  ul.keep { list-style: none; margin-left: 0; font-size: 0.72em;
+    li { margin-bottom: 0.35em; padding-left: 1.1em; position: relative; }
+    li::before { content: ""; position: absolute; left: 0; top: 0.42em;
+                 width: 0.32em; height: 0.32em; background: #c2bcab; }
+    li.focal::before { background: $accent; }
+    li span { color: $muted; font-size: 0.86em; } }
+
+  .five { list-style: none; margin-left: 0; font-size: 1.05em; line-height: 1.6;
+    li:last-child { color: $accent; } }
+
+  .quiet { color: $muted; }
+  .accent { color: $accent; }
+}
