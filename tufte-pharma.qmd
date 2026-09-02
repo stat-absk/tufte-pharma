@@ -25,10 +25,11 @@ fig-dpi: 192
 ```{r setup}
 source("R/theme_tufte.R")
 library(survival)
+library(dplyr)
 adtte  <- read.csv("data/adtte.csv")
 tumor  <- read.csv("data/tumor_wk12.csv")
 orr    <- read.csv("data/orr.csv")
-labs   <- read.csv("data/lab_means.csv")
+lab_means <- read.csv("data/lab_means.csv")
 egfr   <- read.csv("data/egfr.csv")
 prof   <- read.csv("data/dose_profile.csv")
 forest <- read.csv("data/forest.csv")
@@ -45,11 +46,12 @@ km <- data.frame(
 )
 km0 <- rbind(data.frame(time = 0, surv = 1, ncens = 0,
                         trt = unique(km$trt)), km)
-atrisk <- do.call(rbind, lapply(c(0, 6, 12, 18, 24), function(m)
-  aggregate(aval ~ trt, adtte, function(x) sum(x >= m)) |>
-    transform(month = m)))
-labs$analyte <- factor(labs$analyte, levels = c("ALT", "AST", "ALP",
-                       "Bilirubin", "Creatinine", "Hemoglobin"))
+atrisk <- adtte |>
+  cross_join(data.frame(month = c(0, 6, 12, 18, 24))) |>
+  summarize(n_at_risk = sum(aval >= month), .by = c(trt, month))
+lab_means$analyte <- factor(lab_means$analyte,
+                            levels = c("ALT", "AST", "ALP", "Bilirubin",
+                                       "Creatinine", "Hemoglobin"))
 prof$dose <- factor(prof$dose, levels = c("placebo", "10 mg", "20 mg"))
 knitr::opts_chunk$set(dev = "ragg_png")
 ```
@@ -144,12 +146,12 @@ Rule 01 [VDQI, p. 92 — "Above all else show the data"]{}
 ::: {.column width="50%"}
 [As most tools draw it]{.panel-lab .bad}
 ```{r dynamite, fig.width=5.2, fig.height=3.9}
-dyn <- aggregate(pchg ~ trt, tumor, function(x)
-  c(m = mean(x), se = sd(x) / sqrt(length(x))))
-dyn <- do.call(data.frame, dyn)
-ggplot(dyn, aes(trt, pchg.m, fill = trt)) +
+arm_means <- tumor |>
+  summarize(mean_pchg = mean(pchg),
+            se_pchg = sd(pchg) / sqrt(n()), .by = trt)
+ggplot(arm_means, aes(trt, mean_pchg, fill = trt)) +
   geom_col(width = 0.55, colour = "grey25") +
-  geom_errorbar(aes(ymin = pchg.m - pchg.se, ymax = pchg.m + pchg.se),
+  geom_errorbar(aes(ymin = mean_pchg - se_pchg, ymax = mean_pchg + se_pchg),
                 width = 0.18, linewidth = 0.7, colour = "grey25") +
   scale_x_discrete(labels = c("meriplatinib", "placebo")) +
   labs(title = "Mean change in tumor size, week 12",
@@ -161,13 +163,13 @@ ggplot(dyn, aes(trt, pchg.m, fill = trt)) +
 [The same 120 patients]{.panel-lab}
 ```{r dots, fig.width=5.2, fig.height=3.9}
 set.seed(4)
-med_t <- aggregate(pchg ~ trt, tumor, median)
+tumor_medians <- summarize(tumor, pchg = median(pchg), .by = trt)
 ggplot(tumor, aes(trt, pchg)) +
   geom_hline(yintercept = 0, colour = pal$g2, linewidth = 0.3) +
   geom_jitter(width = 0.16, size = 1.1, alpha = 0.55, colour = pal$ink) +
-  geom_errorbar(data = med_t, aes(ymin = pchg, ymax = pchg),
+  geom_errorbar(data = tumor_medians, aes(ymin = pchg, ymax = pchg),
                 width = 0.4, linewidth = 0.8, colour = pal$accent) +
-  geom_text(data = med_t, aes(label = sprintf("%.0f%%", pchg)),
+  geom_text(data = tumor_medians, aes(label = sprintf("%.0f%%", pchg)),
             hjust = 0, nudge_x = 0.26, family = "Menlo",
             size = 3.4, colour = pal$accent, fontface = "bold") +
   scale_x_discrete(labels = c("meriplatinib", "placebo")) +
@@ -231,11 +233,11 @@ ggplot(km0, aes(time, surv, colour = trt)) +
 ::: {.column width="50%"}
 [Only ink the data can move]{.panel-lab}
 ```{r inkonly, fig.width=5.2, fig.height=3.9}
-ends <- aggregate(cbind(time, surv) ~ trt, km0, function(x) x[length(x)])
+curve_ends <- km0 |> slice_tail(n = 1, by = trt)
 ggplot(km0, aes(time, surv, group = trt)) +
   geom_step(aes(colour = trt), linewidth = 0.7) +
   scale_colour_manual(values = c(pal$ink, pal$g2)) +
-  annotate("text", x = ends$time + 0.5, y = ends$surv,
+  annotate("text", x = curve_ends$time + 0.5, y = curve_ends$surv,
            label = c("meriplatinib", "placebo"), hjust = 0,
            family = "Charter", size = 3.6, colour = c(pal$ink, pal$g3)) +
   scale_x_continuous(breaks = c(0, 12, 24), limits = c(0, 29.5)) +
@@ -272,7 +274,7 @@ Rule 03 [VDQI, p. 96 — border, legend, grid, minor ticks, in that order]{}
 ```{r kmbad, fig.width=5.2, fig.height=3.9}
 ggplot(km0, aes(time, surv, colour = trt)) +
   geom_step(linewidth = 1.1) +
-  geom_point(data = subset(km0, ncens > 0), shape = 3, size = 1.6) +
+  geom_point(data = filter(km0, ncens > 0), shape = 3, size = 1.6) +
   scale_colour_manual(NULL, values = c("#00BFC4", "#F8766D")) +
   scale_x_continuous(breaks = 0:8 * 3) +
   labs(title = "Kaplan-Meier plot of PFS (FAS)",
@@ -286,7 +288,7 @@ ggplot(km0, aes(time, surv, colour = trt)) +
 ```{r kmgood, fig.width=5.2, fig.height=3.9}
 ggplot(km0, aes(time, surv, group = trt)) +
   geom_step(aes(colour = trt), linewidth = 0.7) +
-  geom_point(data = subset(km0, ncens > 0), aes(colour = trt),
+  geom_point(data = filter(km0, ncens > 0), aes(colour = trt),
              shape = "|", size = 1.8) +
   scale_colour_manual(values = c(pal$ink, pal$g2)) +
   annotate("segment", x = med[1], xend = med[1], y = 0, yend = 0.5,
@@ -294,17 +296,19 @@ ggplot(km0, aes(time, surv, group = trt)) +
   annotate("text", x = med[1] + 0.4, y = 0.06, family = "Menlo", size = 3.2,
            colour = pal$accent, hjust = 0,
            label = sprintf("median %.1f mo", med[1])) +
-  annotate("text", x = ends$time[1] + 0.5, y = ends$surv[1] + 0.03,
+  annotate("text", x = curve_ends$time[1] + 0.5,
+           y = curve_ends$surv[1] + 0.03,
            label = "meriplatinib", hjust = 0, family = "Charter",
            size = 3.6, colour = pal$ink) +
-  annotate("text", x = ends$time[2] + 0.5, y = ends$surv[2] - 0.01,
+  annotate("text", x = curve_ends$time[2] + 0.5,
+           y = curve_ends$surv[2] - 0.01,
            label = sprintf("placebo\nmedian %.1f mo", med[2]), hjust = 0,
            family = "Charter", size = 3.6, colour = pal$g3, lineheight = 0.95) +
-  geom_text(data = subset(atrisk, trt == "meriplatinib 20 mg"),
-            aes(month, -0.24, label = aval), family = "Menlo",
+  geom_text(data = filter(atrisk, trt == "meriplatinib 20 mg"),
+            aes(month, -0.24, label = n_at_risk), family = "Menlo",
             size = 2.9, colour = pal$g3) +
-  geom_text(data = subset(atrisk, trt == "placebo"),
-            aes(month, -0.34, label = aval), family = "Menlo",
+  geom_text(data = filter(atrisk, trt == "placebo"),
+            aes(month, -0.34, label = n_at_risk), family = "Menlo",
             size = 2.9, colour = pal$g2) +
   annotate("text", x = -1.6, y = c(-0.24, -0.34), hjust = 1, family = "Menlo",
            size = 2.9, colour = c(pal$g3, pal$g2),
@@ -436,7 +440,7 @@ Rule 06 [VDQI, p. 67 — "Compared to what?"]{}
 ::: {.column width="50%"}
 [Twelve lines, one panel]{.panel-lab .bad}
 ```{r labsoverlay, fig.width=5.2, fig.height=3.9}
-ggplot(labs, aes(week, pchg, colour = analyte, linetype = trt)) +
+ggplot(lab_means, aes(week, pchg, colour = analyte, linetype = trt)) +
   geom_line(linewidth = 0.8) +
   scale_linetype_discrete(NULL, labels = c("meriplatinib", "placebo")) +
   labs(title = "Laboratory parameters over time",
@@ -450,11 +454,13 @@ ggplot(labs, aes(week, pchg, colour = analyte, linetype = trt)) +
 ::: {.column width="50%"}
 [Six panels, one line each]{.panel-lab}
 ```{r labs, fig.width=5.2, fig.height=3.9}
-labs$key <- interaction(labs$analyte, labs$trt)
-labs$col <- ifelse(labs$trt == "placebo", "plc",
-                   ifelse(labs$analyte == "ALT", "focal", "act"))
-lab_end <- subset(labs, week == 26 & trt != "placebo")
-ggplot(labs, aes(week, pchg, group = key, colour = col)) +
+lab_means <- lab_means |>
+  mutate(key = interaction(analyte, trt),
+         col = case_when(trt == "placebo" ~ "plc",
+                         analyte == "ALT" ~ "focal",
+                         .default = "act"))
+lab_end <- filter(lab_means, week == 26, trt != "placebo")
+ggplot(lab_means, aes(week, pchg, group = key, colour = col)) +
   geom_hline(yintercept = 0, colour = pal$g1, linewidth = 0.4) +
   geom_line(linewidth = 0.6) +
   geom_point(data = lab_end, size = 1.3) +
@@ -509,11 +515,11 @@ ggplot(prof, aes(week, pchg, group = dose)) +
 ::: {.column width="50%"}
 [Grid one step back]{.panel-lab}
 ```{r layergood, fig.width=5.2, fig.height=3.9}
-pr_end <- subset(prof, week == 26)
+dose_ends <- filter(prof, week == 26)
 ggplot(prof, aes(week, pchg, group = dose)) +
   geom_hline(yintercept = c(-20, -10), colour = pal$g1, linewidth = 0.4) +
   geom_line(linewidth = 0.7, colour = pal$ink) +
-  geom_text(data = pr_end, aes(label = dose), hjust = 0, nudge_x = 0.6,
+  geom_text(data = dose_ends, aes(label = dose), hjust = 0, nudge_x = 0.6,
             family = "Charter", size = 3.4, colour = pal$ink) +
   scale_x_continuous(breaks = c(0, 12, 26), limits = c(0, 30.5)) +
   scale_y_continuous(breaks = c(0, -10, -20)) +
@@ -546,11 +552,11 @@ Rule 08 [Envisioning Information — "To clarify, add detail"]{}
 ::: {.column width="50%"}
 [The summary alone]{.panel-lab .bad}
 ```{r egfrmean, fig.width=5.2, fig.height=3.9}
-egfr_m <- aggregate(egfr ~ week, egfr, function(x)
-  c(m = mean(x), se = sd(x) / sqrt(length(x))))
-egfr_m <- do.call(data.frame, egfr_m)
-ggplot(egfr_m, aes(week, egfr.m)) +
-  geom_errorbar(aes(ymin = egfr.m - egfr.se, ymax = egfr.m + egfr.se),
+egfr_means <- egfr |>
+  summarize(mean_egfr = mean(egfr),
+            se_egfr = sd(egfr) / sqrt(n()), .by = week)
+ggplot(egfr_means, aes(week, mean_egfr)) +
+  geom_errorbar(aes(ymin = mean_egfr - se_egfr, ymax = mean_egfr + se_egfr),
                 width = 0.8, colour = "grey25") +
   geom_line(colour = "grey15", linewidth = 0.9) +
   geom_point(size = 2, colour = "grey15") +
@@ -563,17 +569,19 @@ ggplot(egfr_m, aes(week, egfr.m)) +
 ::: {.column width="50%"}
 [Every patient, and the summary]{.panel-lab}
 ```{r spaghetti, fig.width=5.2, fig.height=3.9}
-med_e <- aggregate(egfr ~ week, egfr, median)
-steep <- subset(egfr, usubjid == "MER201-0007")
+egfr_medians <- summarize(egfr, egfr = median(egfr), .by = week)
+steep <- filter(egfr, usubjid == "MER201-0007")
 drop  <- round(100 * (steep$egfr[7] / steep$egfr[1] - 1))
 ggplot(egfr, aes(week, egfr, group = usubjid)) +
   geom_line(colour = pal$g2, linewidth = 0.35) +
-  geom_line(data = med_e, aes(group = 1), colour = pal$ink, linewidth = 1.1) +
+  geom_line(data = egfr_medians, aes(group = 1), colour = pal$ink,
+            linewidth = 1.1) +
   geom_line(data = steep, colour = pal$accent, linewidth = 0.8) +
   annotate("text", x = 26.4, y = min(steep$egfr), hjust = 0, family = "Menlo",
            size = 2.9, colour = pal$accent,
            label = sprintf("0007 %d%%", drop)) +
-  annotate("text", x = 26.4, y = med_e$egfr[7], hjust = 0, family = "Charter",
+  annotate("text", x = 26.4, y = egfr_medians$egfr[7], hjust = 0,
+           family = "Charter",
            size = 3.4, colour = pal$ink, label = "median") +
   scale_x_continuous(breaks = c(0, 4, 12, 26), limits = c(0, 30.5)) +
   scale_y_continuous(limits = c(30, 115)) +
@@ -620,7 +628,7 @@ ggplot(prof, aes(week, pchg, colour = dose)) +
 ggplot(prof, aes(week, pchg, group = dose)) +
   geom_line(aes(colour = dose), linewidth = 0.7) +
   scale_colour_manual(values = c(pal$g2, pal$g3, pal$accent)) +
-  geom_text(data = pr_end,
+  geom_text(data = dose_ends,
             aes(label = dose, colour = dose), hjust = 0, nudge_x = 0.6,
             family = "Charter", size = 3.4, show.legend = FALSE) +
   scale_x_continuous(breaks = c(0, 12, 26), limits = c(0, 30.5)) +
@@ -813,11 +821,11 @@ pk_long <- rbind(
 )
 pk_long$metric <- factor(pk_long$metric,
                          levels = unique(pk_long$metric))
-pk_end <- subset(pk_long, week == 26)
+pk_ends <- filter(pk_long, week == 26)
 ggplot(pk_long, aes(week, val)) +
   geom_line(linewidth = 0.7, colour = pal$ink) +
-  geom_point(data = pk_end, size = 1.4, colour = pal$ink) +
-  geom_text(data = pk_end, aes(label = val), hjust = 0, nudge_x = 0.7,
+  geom_point(data = pk_ends, size = 1.4, colour = pal$ink) +
+  geom_text(data = pk_ends, aes(label = val), hjust = 0, nudge_x = 0.7,
             family = "Menlo", size = 3, colour = pal$ink) +
   facet_wrap(~metric, ncol = 1, scales = "free_y") +
   scale_x_continuous(breaks = c(0, 12, 26), limits = c(0, 30.5)) +
@@ -862,16 +870,16 @@ ggplot(alt_subj, aes(factor(week), usubjid, fill = fold)) +
 ::: {.column width="50%"}
 [One hue, light to dark, sorted]{.panel-lab}
 ```{r singlehue, fig.width=5.2, fig.height=3.9}
-peak <- aggregate(fold ~ usubjid, alt_subj, max)
+peak_fold <- summarize(alt_subj, fold = max(fold), .by = usubjid)
 alt_subj$usubjid <- factor(alt_subj$usubjid,
-                           levels = peak$usubjid[order(peak$fold)])
-flag <- subset(alt_subj, week == 26 &
-               usubjid %in% peak$usubjid[peak$fold > 2])
+                           levels = peak_fold$usubjid[order(peak_fold$fold)])
+flagged <- filter(alt_subj, week == 26,
+                  usubjid %in% peak_fold$usubjid[peak_fold$fold > 2])
 ggplot(alt_subj, aes(factor(week), usubjid, fill = fold)) +
   geom_tile(colour = pal$paper, linewidth = 0.4) +
   scale_fill_gradient(low = pal$g1, high = "#7a1f18", name = "ALT xULN",
                       breaks = c(1, 2, 3)) +
-  geom_text(data = flag, aes(label = sprintf("%.1f", fold)),
+  geom_text(data = flagged, aes(label = sprintf("%.1f", fold)),
             family = "Menlo", size = 2.6, colour = pal$paper) +
   labs(title = "ALT by patient and week, sorted by peak", x = "week",
        y = NULL) +
@@ -976,7 +984,7 @@ by page.
 ::: {.small}
 MER-201 and MER-102 are simulated: `R/sim_data.R` generates every dataset,
 `R/theme_tufte.R` holds the palette and themes, and every figure is plain
-ggplot2 + survival. Render with `quarto render tufte-pharma.qmd`. Reuse
+ggplot2, dplyr, and survival. Render with `quarto render tufte-pharma.qmd`. Reuse
 freely.
 :::
 

@@ -51,11 +51,3 @@ theme_junk <- function(base_size = 16) {
                                 margin = margin(b = 10))
     )
 }
-
-# Label a line directly at its last point.
-end_label <- function(d, x, y, label, colour = pal$ink, size = 3.4,
-                      nudge = 0.4, family = "Charter") {
-  geom_text(data = d, aes(x = {{x}}, y = {{y}}, label = {{label}}),
-            colour = colour, size = size, family = family,
-            hjust = 0, nudge_x = nudge)
-}

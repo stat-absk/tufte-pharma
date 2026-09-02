@@ -35,7 +35,7 @@ that sums to about 15.
 
 ## Requirements
 
-R with ggplot2, survival, scales, ragg; Quarto ≥ 1.4 (the RStudio-bundled
+R with ggplot2, dplyr, survival, scales, ragg; Quarto ≥ 1.4 (the RStudio-bundled
 quarto works). Figures use the system fonts Charter and Menlo, with Georgia
 as fallback.
 
