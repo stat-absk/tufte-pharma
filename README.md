@@ -1,9 +1,11 @@
 # Show every patient
 
 A 15-minute Quarto presentation on Edward Tufte's principles for the figures
-in a clinical study report, aimed at clinical statisticians. Twelve slides:
-six rules, each demonstrated on a standard trial figure, plus a pharma kill
-list and a pre-ship checklist.
+in a clinical study report, aimed at clinical statisticians. Nineteen slides:
+all ten of Tufte's rules, each demonstrated as a side-by-side pair (the junk
+version on the left, the revised version on the right), then a kill list
+drawn the same way (response pie, dual-axis overlay, rainbow heatmap), and a
+pre-ship checklist.
 
 Every figure comes from two invented studies (MER-201, a phase 2 trial of
 meriplatinib vs placebo; MER-102, a phase 1b dose-finding study) so the

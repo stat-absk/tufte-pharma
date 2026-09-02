@@ -100,3 +100,31 @@ forest <- data.frame(
 )
 write.csv(forest, "data/forest.csv", row.names = FALSE)
 message("data/ written")
+
+# ---- Best overall response, meriplatinib arm (for the pie-chart kill) ----
+bor <- data.frame(
+  response = c("Partial response", "Stable disease", "Progressive disease",
+               "Complete response", "Not evaluable"),
+  n = c(20, 22, 10, 5, 3)
+)
+write.csv(bor, "data/bor.csv", row.names = FALSE)
+
+# ---- PK / response over time (for the dual-axis kill) ----
+weeks_pk <- c(0, 2, 4, 8, 12, 18, 26)
+pk <- data.frame(
+  week = weeks_pk,
+  conc = c(0, 410, 560, 640, 660, 665, 670),           # ng/mL, to steady state
+  pchg = c(0, -6, -11, -15, -18, -20, -22)             # mean tumor change, %
+)
+write.csv(pk, "data/pk.csv", row.names = FALSE)
+
+# ---- Subject-level ALT fold-change (for the rainbow-heatmap kill) ----
+set.seed(23)
+alt_subj <- do.call(rbind, lapply(1:24, function(i) {
+  peak <- if (i <= 4) runif(1, 2.2, 3.4) else runif(1, 0.9, 1.8)
+  shape <- pmin(1, weeks_pk / 12)
+  data.frame(usubjid = sprintf("MER201-%04d", i), week = weeks_pk,
+             fold = round(1 + (peak - 1) * shape + rnorm(7, 0, 0.08), 2))
+}))
+write.csv(alt_subj, "data/alt_subj.csv", row.names = FALSE)
+message("extra data written")

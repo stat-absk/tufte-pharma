@@ -1,6 +1,6 @@
 ---
 title: "Show every patient"
-subtitle: "Tufte's rules for the figures in a clinical study report"
+subtitle: "Tufte's ten rules for the figures in a clinical study report"
 author: "15 minutes, for clinical statisticians"
 format:
   revealjs:
@@ -32,6 +32,9 @@ labs   <- read.csv("data/lab_means.csv")
 egfr   <- read.csv("data/egfr.csv")
 prof   <- read.csv("data/dose_profile.csv")
 forest <- read.csv("data/forest.csv")
+bor    <- read.csv("data/bor.csv")
+pk     <- read.csv("data/pk.csv")
+alt_subj <- read.csv("data/alt_subj.csv")
 
 # KM pieces used on several slides
 sf <- survfit(Surv(aval, 1 - cnsr) ~ trt, data = adtte)
@@ -45,6 +48,9 @@ km0 <- rbind(data.frame(time = 0, surv = 1, ncens = 0,
 atrisk <- do.call(rbind, lapply(c(0, 6, 12, 18, 24), function(m)
   aggregate(aval ~ trt, adtte, function(x) sum(x >= m)) |>
     transform(month = m)))
+labs$analyte <- factor(labs$analyte, levels = c("ALT", "AST", "ALP",
+                       "Bilirubin", "Creatinine", "Hemoglobin"))
+prof$dose <- factor(prof$dose, levels = c("placebo", "10 mg", "20 mg"))
 knitr::opts_chunk$set(dev = "ragg_png")
 ```
 
@@ -55,13 +61,13 @@ A working deck [MER-201 and MER-102 are invented studies. The rules are not.]{}
 :::
 
 ::: {.lede}
-Edward Tufte's rules for data graphics, applied to the figures a clinical
-statistician actually makes: Kaplan-Meier plots, change-from-baseline plots,
-lab profiles, forest plots. Six rules, a kill list, and the checks to run
-before a figure goes in the CSR.
+Edward Tufte's ten rules for data graphics, each demonstrated on a figure a
+clinical statistician actually makes, junk version on the left, revised
+version on the right. Then the kill list, drawn the same way, and the checks
+to run before a figure goes in the CSR.
 :::
 
-```{r cover, fig.width=11.4, fig.height=3.4}
+```{r cover, fig.width=11.4, fig.height=3.2}
 ggplot(km0, aes(time, surv, group = trt)) +
   geom_step(aes(colour = trt), linewidth = 0.7) +
   scale_colour_manual(values = c(pal$ink, pal$g2)) +
@@ -81,13 +87,13 @@ ggplot(km0, aes(time, surv, group = trt)) +
 
 ::: {.caption}
 MER-201 progression-free survival, N = 240. Two curves, two labels, five ticks.
-Everything else on this slide waits for slide 4.
+Everything else on this slide waits for rule 3.
 :::
 
 ::: notes
-1 min. Frame the talk: these rules come from three books (VDQI 1983,
-Envisioning Information 1990, Visual Explanations 1997). Every figure today is
-from one invented phase 2 study so the numbers reconcile across slides.
+0.5 min. Frame the talk: ten rules from three books (VDQI 1983, Envisioning
+Information 1990, Visual Explanations 1997). Every figure is from one invented
+phase 2 study so the numbers reconcile across slides.
 :::
 
 ## The reader is a reviewer
@@ -98,28 +104,40 @@ studies on the table. A regulator with a 400-page CSR and a PDUFA date.
 Every mark that is not data costs them attention they were saving for the data.
 :::
 
-<br>
+:::: {.columns}
+::: {.column width="50%"}
+|    | Rule | Figure it fixes |
+|----|------|-----------------|
+| 1  | Show the data | The dynamite plot |
+| 2  | Maximize the data-ink ratio | The KM plot, audited |
+| 3  | Erase non-data-ink | The default KM plot |
+| 4  | Erase redundant data-ink | The ORR bar, said once |
+| 5  | Keep graphical integrity | The truncated axis |
 
-|   | Rule | Figure it fixes |
-|---|------|-----------------|
-| 1 | Show the data | The dynamite plot |
-| 2 | Erase non-data-ink | The default Kaplan-Meier |
-| 3 | Never let the picture out-run the number | The truncated ORR axis |
-| 4 | Small multiples | The six-lab safety story |
-| 5 | Show every patient | The spaghetti plot, kept |
-| 6 | Integrate words and data | The forest plot, done right |
+: {tbl-colwidths="[8,50,42]"}
+:::
+::: {.column width="50%"}
+|    | Rule | Figure it fixes |
+|----|------|-----------------|
+| 6  | Small multiples | The six-lab overlay |
+| 7  | Layer and separate | The heavy grid |
+| 8  | Micro and macro | The spaghetti plot, kept |
+| 9  | Smallest effective difference | The three-arm rainbow |
+| 10 | Integrate words and data | The forest plot |
 
-: {tbl-colwidths="[6,47,47]"}
+: {tbl-colwidths="[8,50,42]"}
+:::
+::::
 
 ::: notes
-1.5 min. Tufte's frame: data-ink over total ink. In pharma the stakes are
-higher than aesthetics; a figure that hides patients hides risk.
+1 min. Tufte's frame: data-ink over total ink. In pharma the stakes are higher
+than aesthetics; a figure that hides patients hides risk.
 :::
 
 ## Rule 1 · Show the data
 
 ::: {.eyebrow}
-Rule 01 [VDQI, p. 92]{}
+Rule 01 [VDQI, p. 92 — "Above all else show the data"]{}
 :::
 
 :::: {.columns}
@@ -167,15 +185,85 @@ and the medians in red. Same data, opposite amount of information.
 :::
 
 ::: notes
-2.5 min. The dynamite plot is the most common figure in the industry and the
-least informative. A mean and an SE from 60 patients per arm. Point at the
-placebo patients below -30%: invisible on the left.
+1.5 min. The dynamite plot is the most common figure in the industry and the
+least informative. Point at the placebo patients below -30%: invisible on the
+left.
 :::
 
-## Rule 2 · Erase non-data-ink
+## Rule 2 · Maximize the data-ink ratio
 
 ::: {.eyebrow}
 Rule 02 [VDQI, p. 96 — data-ink is ink that would change if the data changed]{}
+:::
+
+:::: {.columns}
+::: {.column width="50%"}
+[Non-data-ink, painted red]{.panel-lab .bad}
+```{r inkaudit, fig.width=5.2, fig.height=3.9}
+ggplot(km0, aes(time, surv, colour = trt)) +
+  geom_step(linewidth = 0.7) +
+  scale_colour_manual(NULL, values = c(pal$ink, pal$g3),
+                      labels = c("meriplatinib", "placebo")) +
+  scale_x_continuous(breaks = 0:12 * 2, minor_breaks = 0:24) +
+  scale_y_continuous(breaks = 0:10 / 10) +
+  labs(title = "Kaplan-Meier plot of PFS", x = "Time (months)", y = "PFS") +
+  theme_minimal(15, base_family = "Charter") +
+  theme(
+    plot.background  = element_rect(fill = pal$paper, colour = NA),
+    panel.grid.major = element_line(colour = pal$accent, linewidth = 0.3),
+    panel.grid.minor = element_line(colour = pal$accent, linewidth = 0.15),
+    panel.border     = element_rect(colour = pal$accent, fill = NA,
+                                    linewidth = 0.8),
+    axis.ticks       = element_line(colour = pal$accent, linewidth = 0.5),
+    axis.ticks.length = unit(4, "pt"),
+    axis.text        = element_text(family = "Menlo", size = 8,
+                                    colour = pal$g3),
+    axis.title       = element_text(family = "Menlo", size = 9,
+                                    colour = pal$muted),
+    plot.title       = element_text(family = "Menlo", size = 10,
+                                    colour = pal$muted),
+    legend.background = element_rect(colour = pal$accent, fill = pal$paper),
+    legend.text      = element_text(size = 9),
+    legend.position  = c(0.8, 0.85)
+  )
+```
+:::
+::: {.column width="50%"}
+[Only ink the data can move]{.panel-lab}
+```{r inkonly, fig.width=5.2, fig.height=3.9}
+ends <- aggregate(cbind(time, surv) ~ trt, km0, function(x) x[length(x)])
+ggplot(km0, aes(time, surv, group = trt)) +
+  geom_step(aes(colour = trt), linewidth = 0.7) +
+  scale_colour_manual(values = c(pal$ink, pal$g2)) +
+  annotate("text", x = ends$time + 0.5, y = ends$surv,
+           label = c("meriplatinib", "placebo"), hjust = 0,
+           family = "Charter", size = 3.6, colour = c(pal$ink, pal$g3)) +
+  scale_x_continuous(breaks = c(0, 12, 24), limits = c(0, 29.5)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1)) +
+  labs(x = "months", y = "PFS") +
+  theme_tufte(15)
+```
+:::
+::::
+
+::: {.caption}
+The audit: change every event time in the dataset and ask what moves. The
+curves move. Nothing red does: not the frame, the grid, the minor ticks, the
+legend box. The right panel keeps the curves, three ticks per axis, and two
+names. The ratio of ink that works to ink that sits went from roughly a third
+to nearly all of it.
+:::
+
+::: notes
+0.5 min. This is the test to run on any figure: would this mark change if the
+data changed? Red here is a teaching device; the accent never goes on
+furniture in a real figure.
+:::
+
+## Rule 3 · Erase non-data-ink
+
+::: {.eyebrow}
+Rule 03 [VDQI, p. 96 — border, legend, grid, minor ticks, in that order]{}
 :::
 
 :::: {.columns}
@@ -196,7 +284,6 @@ ggplot(km0, aes(time, surv, colour = trt)) +
 ::: {.column width="50%"}
 [After erasure]{.panel-lab}
 ```{r kmgood, fig.width=5.2, fig.height=3.9}
-ends <- aggregate(cbind(time, surv) ~ trt, km0, function(x) x[length(x)])
 ggplot(km0, aes(time, surv, group = trt)) +
   geom_step(aes(colour = trt), linewidth = 0.7) +
   geom_point(data = subset(km0, ncens > 0), aes(colour = trt),
@@ -239,15 +326,64 @@ counts, which are the honest width of the right-hand tail.
 :::
 
 ::: notes
-2.5 min. The legend is the tell: it asks the reader to hold color pairs in
+1.5 min. The legend is the tell: it asks the reader to hold color pairs in
 memory. The at-risk table is not decoration; past month 18 both curves stand
 on fewer than 35 patients.
 :::
 
-## Rule 3 · Never let the picture out-run the number
+## Rule 4 · Erase redundant data-ink
 
 ::: {.eyebrow}
-Rule 03 [Lie factor = visual effect ÷ data effect. Keep it between 0.95 and 1.05]{}
+Rule 04 [VDQI, p. 100 — one encoding per quantity]{}
+:::
+
+:::: {.columns}
+::: {.column width="50%"}
+[42.3, said five ways]{.panel-lab .bad}
+```{r redundant, fig.width=5.2, fig.height=3.9}
+ggplot(orr, aes(trt, orr, fill = trt)) +
+  geom_col(width = 0.5, colour = "grey25") +
+  geom_text(aes(label = sprintf("%.1f%%", orr)), vjust = -0.6, size = 3.6) +
+  scale_y_continuous(breaks = 0:9 * 5, limits = c(0, 48)) +
+  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  labs(title = "Overall response rate", x = NULL, y = "ORR (%)") +
+  theme_junk(15)
+```
+:::
+::: {.column width="50%"}
+[42.3, said once]{.panel-lab}
+```{r once, fig.width=5.2, fig.height=3.9}
+ggplot(orr, aes(trt, orr)) +
+  geom_segment(aes(xend = trt, y = 0, yend = orr), colour = pal$g2,
+               linewidth = 0.4) +
+  geom_point(size = 3, colour = c(pal$accent, pal$ink)) +
+  geom_text(aes(label = sprintf("%.1f%%", orr)), vjust = -1.1,
+            family = "Menlo", size = 3.6,
+            colour = c(pal$accent, pal$ink)) +
+  scale_y_continuous(breaks = c(0, 45), limits = c(0, 48)) +
+  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  labs(title = "Overall response rate (%)", x = NULL, y = NULL) +
+  theme_tufte(15)
+```
+:::
+::::
+
+::: {.caption}
+The left bar states 42.3 five times: top-edge position, fill height, printed
+label, the gridline it touches, the axis tick beside it. Five statements of
+one number are not clearer, they are louder. The right panel keeps two: the
+dot's position, and the printed value for the reader who needs the decimals.
+:::
+
+::: notes
+0.5 min. A number plus a sparkline is two encodings doing different work.
+A bar plus its own label plus a grid is one encoding shouting.
+:::
+
+## Rule 5 · Never let the picture out-run the number
+
+::: {.eyebrow}
+Rule 05 [Lie factor = visual effect ÷ data effect. Keep it between 0.95 and 1.05]{}
 :::
 
 :::: {.columns}
@@ -281,24 +417,39 @@ ggplot(orr, aes(trt, orr)) +
 ORR 42.3% vs 38.1%: an 11% relative difference. The truncated panel draws a
 135% visual difference. Lie factor 12. Bars encode length, so their baseline
 is zero; if a difference is only visible on a truncated axis, that is the
-finding, and the honest home for it is a dot plot with a labeled range or the
-number itself with its CI.
+finding, and the honest home for it is the number itself with its CI.
 :::
 
 ::: notes
-2 min. Also on the lie list: response "bubbles" scaled by radius, dual-axis
-PK-efficacy overlays, subgroup panels on different scales.
+1 min. Also on the lie list: response bubbles scaled by radius, subgroup
+panels on different scales. The dual-axis overlay gets its own slide in the
+kill list.
 :::
 
-## Rule 4 · Small multiples
+## Rule 6 · Small multiples
 
 ::: {.eyebrow}
-Rule 04 [VDQI, p. 67 — "Compared to what?"]{}
+Rule 06 [VDQI, p. 67 — "Compared to what?"]{}
 :::
 
-```{r labs, fig.width=11.4, fig.height=4.4}
-labs$analyte <- factor(labs$analyte, levels = c("ALT", "AST", "ALP",
-                       "Bilirubin", "Creatinine", "Hemoglobin"))
+:::: {.columns}
+::: {.column width="50%"}
+[Twelve lines, one panel]{.panel-lab .bad}
+```{r labsoverlay, fig.width=5.2, fig.height=3.9}
+ggplot(labs, aes(week, pchg, colour = analyte, linetype = trt)) +
+  geom_line(linewidth = 0.8) +
+  scale_linetype_discrete(NULL, labels = c("meriplatinib", "placebo")) +
+  labs(title = "Laboratory parameters over time",
+       x = "Week", y = "Mean % change", colour = "Parameter") +
+  theme_junk(15) +
+  theme(legend.key.size = unit(11, "pt"),
+        legend.text = element_text(size = 8),
+        legend.title = element_text(size = 9))
+```
+:::
+::: {.column width="50%"}
+[Six panels, one line each]{.panel-lab}
+```{r labs, fig.width=5.2, fig.height=3.9}
 labs$key <- interaction(labs$analyte, labs$trt)
 labs$col <- ifelse(labs$trt == "placebo", "plc",
                    ifelse(labs$analyte == "ALT", "focal", "act"))
@@ -306,35 +457,112 @@ lab_end <- subset(labs, week == 26 & trt != "placebo")
 ggplot(labs, aes(week, pchg, group = key, colour = col)) +
   geom_hline(yintercept = 0, colour = pal$g1, linewidth = 0.4) +
   geom_line(linewidth = 0.6) +
-  geom_point(data = lab_end, size = 1.4) +
+  geom_point(data = lab_end, size = 1.3) +
   scale_colour_manual(values = c(plc = pal$g2, act = pal$ink,
                                  focal = pal$accent)) +
   facet_wrap(~analyte, nrow = 2) +
-  scale_x_continuous(breaks = c(0, 12, 26)) +
+  scale_x_continuous(breaks = c(0, 26)) +
   scale_y_continuous(breaks = c(0, 25)) +
   labs(x = "week", y = "mean % change") +
-  theme_tufte(15)
+  theme_tufte(15) +
+  theme(panel.spacing = unit(10, "pt"))
 ```
+:::
+::::
 
 ::: {.caption}
-Mean % change from baseline, meriplatinib in ink, placebo in gray. Six panels,
-one scale, same order every time this figure appears in the CSR. The ALT climb
-to +24% is the safety story, so ALT carries the accent; nothing else does.
-Six lines overlaid on one panel would bury it.
+Mean % change from baseline, six labs, two arms. On the left the ALT signal is
+one strand in a twelve-line knot with a two-part legend. On the right, six
+panels on one shared scale, meriplatinib in ink, placebo in gray; the ALT
+climb to +24% is the safety story, so ALT alone carries the accent.
 :::
 
 ::: notes
-2 min. The eye reads parallel panels faster than it untangles overlap.
-Identical scale in every panel or the comparison is a lie (see rule 3).
+1 min. The eye reads parallel panels faster than it untangles overlap. Same
+scale in every panel, same order every time the figure repeats in the CSR.
 :::
 
-## Rule 5 · Show every patient
+## Rule 7 · Layer and separate
 
 ::: {.eyebrow}
-Rule 05 [Envisioning Information — "To clarify, add detail"]{}
+Rule 07 [Envisioning Information — data loudest, scaffolding faintest]{}
 :::
 
-```{r spaghetti, fig.width=11.4, fig.height=4.2}
+:::: {.columns}
+::: {.column width="50%"}
+[Grid at the weight of the data]{.panel-lab .bad}
+```{r layerbad, fig.width=5.2, fig.height=3.9}
+ggplot(prof, aes(week, pchg, group = dose)) +
+  geom_line(linewidth = 1, colour = "grey15") +
+  scale_x_continuous(breaks = 0:13 * 2) +
+  scale_y_continuous(breaks = -13:1 * 2) +
+  labs(title = "Tumor burden by dose (MER-102)",
+       x = "Week", y = "Mean % change") +
+  theme_grey(15, base_family = "Helvetica") +
+  theme(panel.grid.major = element_line(colour = "grey40", linewidth = 0.5),
+        panel.grid.minor = element_line(colour = "grey55", linewidth = 0.35),
+        panel.border = element_rect(colour = "grey15", fill = NA,
+                                    linewidth = 0.9),
+        plot.title = element_text(size = 9.5, hjust = 0))
+```
+:::
+::: {.column width="50%"}
+[Grid one step back]{.panel-lab}
+```{r layergood, fig.width=5.2, fig.height=3.9}
+pr_end <- subset(prof, week == 26)
+ggplot(prof, aes(week, pchg, group = dose)) +
+  geom_hline(yintercept = c(-20, -10), colour = pal$g1, linewidth = 0.4) +
+  geom_line(linewidth = 0.7, colour = pal$ink) +
+  geom_text(data = pr_end, aes(label = dose), hjust = 0, nudge_x = 0.6,
+            family = "Charter", size = 3.4, colour = pal$ink) +
+  scale_x_continuous(breaks = c(0, 12, 26), limits = c(0, 30.5)) +
+  scale_y_continuous(breaks = c(0, -10, -20)) +
+  labs(title = "Tumor burden by dose (MER-102)",
+       x = "week", y = "mean % change") +
+  theme_tufte(15)
+```
+:::
+::::
+
+::: {.caption}
+Same three dose groups. On the left the grid is drawn at the weight of the
+data and every crossing makes a small visual event Tufte calls 1 + 1 = 3.
+On the right the layers are ranked: data in ink, labels next, two faint
+gridlines last. Nothing crosses anything at equal weight.
+:::
+
+::: notes
+0.5 min. The fix for a vibrating chart is almost always to lighten the grid,
+not to thicken the data.
+:::
+
+## Rule 8 · Micro and macro readings
+
+::: {.eyebrow}
+Rule 08 [Envisioning Information — "To clarify, add detail"]{}
+:::
+
+:::: {.columns}
+::: {.column width="50%"}
+[The summary alone]{.panel-lab .bad}
+```{r egfrmean, fig.width=5.2, fig.height=3.9}
+egfr_m <- aggregate(egfr ~ week, egfr, function(x)
+  c(m = mean(x), se = sd(x) / sqrt(length(x))))
+egfr_m <- do.call(data.frame, egfr_m)
+ggplot(egfr_m, aes(week, egfr.m)) +
+  geom_errorbar(aes(ymin = egfr.m - egfr.se, ymax = egfr.m + egfr.se),
+                width = 0.8, colour = "grey25") +
+  geom_line(colour = "grey15", linewidth = 0.9) +
+  geom_point(size = 2, colour = "grey15") +
+  scale_y_continuous(limits = c(30, 115)) +
+  labs(title = "Mean eGFR over time (meriplatinib arm)",
+       x = "Week", y = "eGFR (mean ± SE)") +
+  theme_junk(15)
+```
+:::
+::: {.column width="50%"}
+[Every patient, and the summary]{.panel-lab}
+```{r spaghetti, fig.width=5.2, fig.height=3.9}
 med_e <- aggregate(egfr ~ week, egfr, median)
 steep <- subset(egfr, usubjid == "MER201-0007")
 drop  <- round(100 * (steep$egfr[7] / steep$egfr[1] - 1))
@@ -343,34 +571,103 @@ ggplot(egfr, aes(week, egfr, group = usubjid)) +
   geom_line(data = med_e, aes(group = 1), colour = pal$ink, linewidth = 1.1) +
   geom_line(data = steep, colour = pal$accent, linewidth = 0.8) +
   annotate("text", x = 26.4, y = min(steep$egfr), hjust = 0, family = "Menlo",
-           size = 3.2, colour = pal$accent,
-           label = sprintf("MER201-0007  %d%%", drop)) +
+           size = 2.9, colour = pal$accent,
+           label = sprintf("0007 %d%%", drop)) +
   annotate("text", x = 26.4, y = med_e$egfr[7], hjust = 0, family = "Charter",
-           size = 3.6, colour = pal$ink, label = "median") +
-  scale_x_continuous(breaks = c(0, 4, 12, 26), limits = c(0, 29.5)) +
+           size = 3.4, colour = pal$ink, label = "median") +
+  scale_x_continuous(breaks = c(0, 4, 12, 26), limits = c(0, 30.5)) +
+  scale_y_continuous(limits = c(30, 115)) +
   labs(x = "week", y = "eGFR") +
   theme_tufte(15)
 ```
+:::
+::::
 
 ::: {.caption}
-eGFR, meriplatinib arm, 30 patients over 26 weeks. The median is flat. Three
-patients decline more than 30%, one past 40%. A means-only figure reports the
-flat line and files the nephrotoxicity signal in an appendix listing.
+eGFR, meriplatinib arm, 30 patients over 26 weeks, same y scale in both
+panels. The mean is flat, and the left panel ends the story there. The right
+panel keeps the macro reading (a stable band) and adds the micro one: three
+patients decline more than 30%, one past 40%, in red. Means can be stable
+while patients are not.
 :::
 
 ::: notes
-2 min. Micro and macro: from the back of the room, a stable band. Up close,
-every patient traceable. Means can be stable while patients are not; this is
-the argument for keeping the spaghetti plot.
+1 min. This is the argument for keeping the spaghetti plot: a means-only
+figure files the nephrotoxicity signal in an appendix listing.
 :::
 
-## Rule 6 · Integrate words and data
+## Rule 9 · The smallest effective difference
 
 ::: {.eyebrow}
-Rule 06 [The forest plot is the most Tufte figure in the CSR: a table and a graphic, fused]{}
+Rule 09 [Visual Explanations, p. 73 — distinctions as subtle as possible, still clear]{}
 :::
 
-```{r forest, fig.width=11.4, fig.height=4.4}
+:::: {.columns}
+::: {.column width="50%"}
+[Three saturated hues, one legend]{.panel-lab .bad}
+```{r loudarms, fig.width=5.2, fig.height=3.9}
+ggplot(prof, aes(week, pchg, colour = dose)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 1.8) +
+  labs(title = "Tumor burden by dose (MER-102)",
+       x = "Week", y = "Mean % change", colour = "Dose") +
+  theme_junk(15)
+```
+:::
+::: {.column width="50%"}
+[Gray context, one accent]{.panel-lab}
+```{r quietarms, fig.width=5.2, fig.height=3.9}
+ggplot(prof, aes(week, pchg, group = dose)) +
+  geom_line(aes(colour = dose), linewidth = 0.7) +
+  scale_colour_manual(values = c(pal$g2, pal$g3, pal$accent)) +
+  geom_text(data = pr_end,
+            aes(label = dose, colour = dose), hjust = 0, nudge_x = 0.6,
+            family = "Charter", size = 3.4, show.legend = FALSE) +
+  scale_x_continuous(breaks = c(0, 12, 26), limits = c(0, 30.5)) +
+  scale_y_continuous(breaks = c(0, -10, -20)) +
+  labs(title = "Tumor burden by dose (MER-102)",
+       x = "week", y = "mean % change") +
+  theme_tufte(15)
+```
+:::
+::::
+
+::: {.caption}
+The proposed phase 3 dose is 20 mg, so 20 mg carries the accent and the other
+arms become gray context, labeled where their lines end. The left panel
+separates three groups with three saturated hues and makes the reader look up
+each one; the reading is identical, only the effort changes.
+:::
+
+::: notes
+0.5 min. Contrast is a budget. Two grays and one red separate three arms;
+red against green alone fails for roughly 8% of men.
+:::
+
+## Rule 10 · Integrate words and data
+
+::: {.eyebrow}
+Rule 10 [The forest plot is the most Tufte figure in the CSR: a table and a graphic, fused]{}
+:::
+
+:::: {.columns}
+::: {.column width="40%"}
+[The graphic apart from its table]{.panel-lab .bad}
+```{r hrbars, fig.width=4.4, fig.height=3.9}
+forest$subgroup <- factor(forest$subgroup, levels = forest$subgroup)
+ggplot(forest, aes(subgroup, hr, fill = subgroup)) +
+  geom_col(width = 0.6, colour = "grey25") +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "grey25") +
+  labs(title = "HR by subgroup (see Table 14.2.4)",
+       x = NULL, y = "Hazard ratio") +
+  theme_junk(15) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7),
+        legend.position = "none")
+```
+:::
+::: {.column width="60%"}
+[Label, n, number, picture: one row]{.panel-lab}
+```{r forest, fig.width=6.8, fig.height=3.9}
 forest$row <- rev(seq_len(nrow(forest)))
 forest$focal <- forest$subgroup == "Overall"
 ggplot(forest, aes(hr, row)) +
@@ -379,33 +676,37 @@ ggplot(forest, aes(hr, row)) +
   geom_segment(aes(x = lo, xend = hi, yend = row,
                    colour = focal), linewidth = 0.5) +
   geom_point(aes(size = focal, colour = focal)) +
-  geom_text(aes(x = 0.208, label = n), family = "Menlo", size = 3.1,
+  geom_text(aes(x = 0.208, label = n), family = "Menlo", size = 2.9,
             colour = pal$g3, hjust = 1) +
-  geom_text(aes(x = 2.05, label = sprintf("%.2f (%.2f\u2013%.2f)", hr, lo, hi),
+  geom_text(aes(x = 2.05, label = sprintf("%.2f (%.2f–%.2f)", hr, lo, hi),
                 colour = focal),
-            family = "Menlo", size = 3.1, hjust = 1) +
+            family = "Menlo", size = 2.9, hjust = 1) +
   annotate("text", x = c(0.208, 2.05), y = 9.9, label = c("n", "HR (95% CI)"),
-           family = "Menlo", size = 2.9, colour = pal$muted, hjust = 1) +
+           family = "Menlo", size = 2.7, colour = pal$muted, hjust = 1) +
   annotate("text", x = c(0.93, 1.08), y = 0.25, hjust = c(1, 0),
-           family = "Menlo", size = 2.9, colour = pal$muted,
-           label = c("\u2190 favors meriplatinib", "favors placebo \u2192")) +
+           family = "Menlo", size = 2.7, colour = pal$muted,
+           label = c("← favors meriplatinib", "favors placebo →")) +
   scale_colour_manual(values = c(`TRUE` = pal$accent, `FALSE` = pal$ink)) +
-  scale_size_manual(values = c(`TRUE` = 2.6, `FALSE` = 1.7)) +
+  scale_size_manual(values = c(`TRUE` = 2.4, `FALSE` = 1.6)) +
   scale_x_log10(breaks = c(0.5, 1), limits = c(0.14, 2.05)) +
   scale_y_continuous(breaks = forest$row, labels = forest$subgroup) +
   coord_cartesian(clip = "off") +
   labs(x = "hazard ratio, log scale", y = NULL) +
   theme_tufte(15) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank(),
-        axis.text.y = element_text(family = "Charter", size = 11,
+        axis.text.y = element_text(family = "Charter", size = 10,
                                    colour = pal$ink, hjust = 0),
-        plot.margin = margin(18, 8, 8, 8))
+        plot.margin = margin(16, 8, 8, 8))
 ```
+:::
+::::
 
 ::: {.caption}
-PFS by subgroup, MER-201. Label, n, estimate and picture share each row; the
-eye never leaves the line it is reading. No legend, no second panel. The prior
-platinum CI crossing 1 is legible without a footnote.
+PFS by subgroup. The left panel commits three sins at once: bars for ratios
+(a ratio has no zero to grow from), no intervals, and the numbers exiled to a
+table four pages away. In the forest plot, label, n, estimate and picture
+share each row; the prior platinum CI crossing 1 is legible without a
+footnote.
 :::
 
 ::: notes
@@ -413,36 +714,208 @@ platinum CI crossing 1 is legible without a footnote.
 demographic tables; a number in a sentence can carry its shape with it.
 :::
 
-## The kill list, pharma edition
+## Kill · The response pie
+
+::: {.eyebrow}
+The kill list, drawn [1 of 3]{}
+:::
 
 :::: {.columns}
 ::: {.column width="50%"}
-| Kill | Use instead |
-|------|-------------|
-| Dynamite plots | Dots + median, all patients |
-| Pie of demographics | The demographics table |
-| Truncated bar axes | Zero base, or a dot plot |
-| Dual-axis PK / efficacy | Two aligned panels |
-| 3D anything | The 2D version |
-| Rainbow lab heatmaps | Single hue, light to dark |
-
-: {.kill}
+[Angles, matched to a legend]{.panel-lab .bad}
+```{r pie, fig.width=5.2, fig.height=3.9}
+ggplot(bor, aes(x = "", y = n, fill = response)) +
+  geom_col(width = 1, colour = "white") +
+  coord_polar(theta = "y") +
+  labs(title = "Best overall response, meriplatinib arm",
+       fill = NULL, x = NULL, y = NULL) +
+  theme_grey(15, base_family = "Helvetica") +
+  theme(axis.text = element_blank(), axis.ticks = element_blank(),
+        panel.grid = element_blank(),
+        plot.title = element_text(size = 9.5, hjust = 0),
+        legend.text = element_text(size = 8),
+        legend.key.size = unit(11, "pt"))
+```
 :::
 ::: {.column width="50%"}
-| Kill | Use instead |
-|------|-------------|
-| Legend far from curves | Direct labels at line ends |
-| Grid at data weight | Faint gray, or none |
-| Symbols at every step | Censor ticks only |
-| Subgroup panels, mixed scales | One shared scale |
-| "approximately ~42%" | "42.3%" |
-| p-value theater | Estimate + CI, shown |
-
-: {.kill}
+[Positions, sorted and labeled]{.panel-lab}
+```{r borsorted, fig.width=5.2, fig.height=3.9}
+bor <- bor[order(bor$n), ]
+bor$response <- factor(bor$response, levels = bor$response)
+bor$focal <- bor$response %in% c("Partial response", "Complete response")
+ggplot(bor, aes(n, response)) +
+  geom_segment(aes(x = 0, xend = n, yend = response), colour = pal$g2,
+               linewidth = 0.4) +
+  geom_point(aes(colour = focal), size = 2.6) +
+  geom_text(aes(label = sprintf("%d  (%.0f%%)", n, 100 * n / sum(n)),
+                colour = focal),
+            hjust = 0, nudge_x = 0.5, family = "Menlo", size = 3.1) +
+  scale_colour_manual(values = c(`TRUE` = pal$accent, `FALSE` = pal$ink)) +
+  scale_x_continuous(limits = c(0, 27), breaks = NULL) +
+  labs(title = "Best overall response, meriplatinib arm (n = 60)",
+       x = NULL, y = NULL) +
+  theme_tufte(15) +
+  theme(axis.line = element_blank(), axis.ticks = element_blank(),
+        axis.text.y = element_text(family = "Charter", size = 10.5,
+                                   colour = pal$ink))
+```
 :::
 ::::
 
-<br>
+::: {.caption}
+Which is larger, stable disease or partial response? The pie asks you to
+compare two angles 90 degrees apart, via a legend. The dot plot answers
+before the question forms, gives the exact counts, and marks the responders,
+the number the study lives on, in red.
+:::
+
+::: notes
+0.75 min. People read positions on a common scale well and angles badly.
+That is the whole case, and it never changes.
+:::
+
+## Kill · The dual-axis overlay
+
+::: {.eyebrow}
+The kill list, drawn [2 of 3]{}
+:::
+
+:::: {.columns}
+::: {.column width="50%"}
+[Two scales, one panel]{.panel-lab .bad}
+```{r dualaxis, fig.width=5.2, fig.height=3.9}
+ggplot(pk, aes(week)) +
+  geom_line(aes(y = conc), colour = "#2166ac", linewidth = 1) +
+  geom_point(aes(y = conc), colour = "#2166ac", size = 1.8) +
+  geom_line(aes(y = (pchg + 25) / 25 * 700), colour = "#b2182b",
+            linewidth = 1) +
+  geom_point(aes(y = (pchg + 25) / 25 * 700), colour = "#b2182b",
+             size = 1.8) +
+  scale_y_continuous(name = "Concentration (ng/mL)",
+                     sec.axis = sec_axis(~ . / 700 * 25 - 25,
+                                         name = "Tumor change (%)")) +
+  labs(title = "PK and efficacy over time", x = "Week") +
+  theme_junk(15) +
+  theme(axis.title.y.left = element_text(colour = "#2166ac"),
+        axis.title.y.right = element_text(colour = "#b2182b"),
+        axis.text.y.left = element_text(colour = "#2166ac"),
+        axis.text.y.right = element_text(colour = "#b2182b"))
+```
+:::
+::: {.column width="50%"}
+[Two panels, one clock]{.panel-lab}
+```{r twopanels, fig.width=5.2, fig.height=3.9}
+pk_long <- rbind(
+  data.frame(week = pk$week, val = pk$conc,
+             metric = "serum concentration, ng/mL"),
+  data.frame(week = pk$week, val = pk$pchg,
+             metric = "mean tumor change, %")
+)
+pk_long$metric <- factor(pk_long$metric,
+                         levels = unique(pk_long$metric))
+pk_end <- subset(pk_long, week == 26)
+ggplot(pk_long, aes(week, val)) +
+  geom_line(linewidth = 0.7, colour = pal$ink) +
+  geom_point(data = pk_end, size = 1.4, colour = pal$ink) +
+  geom_text(data = pk_end, aes(label = val), hjust = 0, nudge_x = 0.7,
+            family = "Menlo", size = 3, colour = pal$ink) +
+  facet_wrap(~metric, ncol = 1, scales = "free_y") +
+  scale_x_continuous(breaks = c(0, 12, 26), limits = c(0, 30.5)) +
+  labs(x = "week", y = NULL) +
+  theme_tufte(15) +
+  theme(panel.spacing = unit(16, "pt"))
+```
+:::
+::::
+
+::: {.caption}
+The left panel invites a correlation the data never claimed: rescale either
+axis and the crossing point moves anywhere you like. The right panel keeps
+the shared clock, gives each measure its own honest scale, and lets the
+reader align the timings without being steered.
+:::
+
+::: notes
+0.75 min. Any two monotone series can be made to cross wherever the analyst
+chooses the scales. That degree of freedom is the problem.
+:::
+
+## Kill · The rainbow heatmap
+
+::: {.eyebrow}
+The kill list, drawn [3 of 3]{}
+:::
+
+:::: {.columns}
+::: {.column width="50%"}
+[Hue has no order]{.panel-lab .bad}
+```{r rainbow, fig.width=5.2, fig.height=3.9}
+ggplot(alt_subj, aes(factor(week), usubjid, fill = fold)) +
+  geom_tile() +
+  scale_fill_gradientn(colours = rev(rainbow(7)), name = "ALT\nxULN") +
+  labs(title = "ALT by patient and week", x = "Week", y = NULL) +
+  theme_junk(15) +
+  theme(axis.text.y = element_text(size = 5),
+        legend.text = element_text(size = 8))
+```
+:::
+::: {.column width="50%"}
+[One hue, light to dark, sorted]{.panel-lab}
+```{r singlehue, fig.width=5.2, fig.height=3.9}
+peak <- aggregate(fold ~ usubjid, alt_subj, max)
+alt_subj$usubjid <- factor(alt_subj$usubjid,
+                           levels = peak$usubjid[order(peak$fold)])
+flag <- subset(alt_subj, week == 26 &
+               usubjid %in% peak$usubjid[peak$fold > 2])
+ggplot(alt_subj, aes(factor(week), usubjid, fill = fold)) +
+  geom_tile(colour = pal$paper, linewidth = 0.4) +
+  scale_fill_gradient(low = pal$g1, high = "#7a1f18", name = "ALT xULN",
+                      breaks = c(1, 2, 3)) +
+  geom_text(data = flag, aes(label = sprintf("%.1f", fold)),
+            family = "Menlo", size = 2.6, colour = pal$paper) +
+  labs(title = "ALT by patient and week, sorted by peak", x = "week",
+       y = NULL) +
+  theme_tufte(15) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.line = element_blank(),
+        legend.position = "right",
+        legend.key.size = unit(10, "pt"),
+        legend.text = element_text(family = "Menlo", size = 8,
+                                   colour = pal$g3),
+        legend.title = element_text(family = "Menlo", size = 8,
+                                    colour = pal$muted))
+```
+:::
+::::
+
+::: {.caption}
+ALT as multiples of ULN, 24 patients, 26 weeks. Is yellow higher than green?
+The rainbow forces the reader to keep re-checking the legend, and its
+brightest band lands mid-scale. One hue running light to dark reads without a
+key, and sorting patients by peak puts the four who crossed 2 xULN, labeled at
+week 26, in one place instead of scattered.
+:::
+
+::: notes
+0.75 min. Hue is not ordinal; lightness is. Sorting is the quiet half of this
+fix and does as much work as the color change.
+:::
+
+## The rest of the kill list
+
+|   Kill | Use instead | Shown at |
+|--------|-------------|----------|
+| Dynamite plots | Dots and medians, all patients | Rule 1 |
+| Legend far from the curves | Direct labels at line ends | Rules 3, 9 |
+| Grid and frame at data weight | Faint gray, or nothing | Rules 2, 7 |
+| Truncated bar axes | Zero base, or the number with its CI | Rule 5 |
+| Bars for ratios | A point with an interval on a log scale | Rule 10 |
+| 3D anything | The 2D version | never drawn, on purpose |
+| Subgroup panels on mixed scales | One shared scale | Rules 6, 8 |
+| "approximately ~42%" | "42.3%" | every caption |
+| p-value theater | The estimate and interval, shown | Rule 10 |
+
+: {.kill tbl-colwidths="[34,42,24]"}
 
 ::: {.small}
 If a journal or a sponsor template insists on one of these, comply, and put
@@ -450,8 +923,8 @@ the Tufte version beside it in the appendix. Reviewers notice.
 :::
 
 ::: notes
-1.5 min. Quick scan, don't read every row aloud. The theme: every item hides
-either patients or scale.
+0.5 min. Every row is a pointer back to a pair already on screen; nothing on
+this list is hypothetical.
 :::
 
 ## Before a figure ships
@@ -486,7 +959,7 @@ draft of the junk panel beside it.
 :::
 
 ::: notes
-1.5 min. Close on "revise and edit": the before panels in this deck are real
+1 min. Close on "revise and edit": the before panels in this deck are real
 first drafts, not strawmen; ggplot2 and SAS defaults produce them.
 :::
 
@@ -508,5 +981,5 @@ freely.
 :::
 
 ::: notes
-0.5 min. Offer the repo; the theme drops into any TFL program.
+0.25 min. Offer the repo; the theme drops into any TFL program.
 :::
