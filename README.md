@@ -1,5 +1,7 @@
 # Show every patient
 
+**[View the slides](https://stat-absk.github.io/slides/tufte-pharma.html)**
+
 A 15-minute Quarto presentation on Edward Tufte's principles for the figures
 in a clinical study report, aimed at clinical statisticians. Nineteen slides:
 all ten of Tufte's rules, each demonstrated as a side-by-side pair (the junk
