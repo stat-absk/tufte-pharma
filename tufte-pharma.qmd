@@ -1,6 +1,6 @@
 ---
-title: "Show every patient"
-subtitle: "Tufte's ten rules for the figures in a clinical study report"
+title: "Data visualizations based on Tufte's principles"
+subtitle: "Ten rules for the figures in a clinical study report"
 author: "15 minutes, for clinical statisticians"
 format:
   revealjs:
@@ -73,15 +73,15 @@ drawn the same way, and the checks to run before a figure goes in the CSR.
 ggplot(km0, aes(time, surv, group = trt)) +
   geom_step(aes(colour = trt), linewidth = 0.7) +
   scale_colour_manual(values = c(pal$ink, pal$g2)) +
-  annotate("text", x = 24.3, y = km0$surv[km0$trt == "meriplatinib 20 mg" &
-             km0$time == max(km0$time[km0$trt == "meriplatinib 20 mg"])][1],
-           label = "meriplatinib", hjust = 0, family = "Charter",
+  annotate("text", x = 24.3, y = km0$surv[km0$trt == "active treatment" &
+             km0$time == max(km0$time[km0$trt == "active treatment"])][1],
+           label = "active treatment", hjust = 0, family = "Charter",
            size = 4, colour = pal$ink) +
   annotate("text", x = 24.3, y = km0$surv[km0$trt == "placebo" &
              km0$time == max(km0$time[km0$trt == "placebo"])][1],
            label = "placebo", hjust = 0, family = "Charter",
            size = 4, colour = pal$g3) +
-  scale_x_continuous(breaks = c(0, 6, 12, 18, 24), limits = c(0, 28.5)) +
+  scale_x_continuous(breaks = c(0, 6, 12, 18, 24), limits = c(0, 32.5)) +
   scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1)) +
   labs(x = "months", y = "PFS") +
   theme_tufte(15)
@@ -153,7 +153,7 @@ ggplot(arm_means, aes(trt, mean_pchg, fill = trt)) +
   geom_col(width = 0.55, colour = "grey25") +
   geom_errorbar(aes(ymin = mean_pchg - se_pchg, ymax = mean_pchg + se_pchg),
                 width = 0.18, linewidth = 0.7, colour = "grey25") +
-  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  scale_x_discrete(labels = c("active treatment", "placebo")) +
   labs(title = "Mean change in tumor size, week 12",
        x = NULL, y = "% change (mean ± SE)") +
   theme_junk(15)
@@ -172,7 +172,7 @@ ggplot(tumor, aes(trt, pchg)) +
   geom_text(data = tumor_medians, aes(label = sprintf("%.0f%%", pchg)),
             hjust = 0, nudge_x = 0.26, family = "Menlo",
             size = 3.4, colour = pal$accent, fontface = "bold") +
-  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  scale_x_discrete(labels = c("active treatment", "placebo")) +
   labs(title = "Change in tumor size, week 12, every patient",
        x = NULL, y = "% change from baseline") +
   theme_tufte(15)
@@ -182,7 +182,7 @@ ggplot(tumor, aes(trt, pchg)) +
 
 ::: {.caption}
 The bar shows 2 numbers from 120 patients and hides the rest: the spread, the
-placebo responders, the meriplatinib progressors. The dot plot shows all 120
+placebo responders, the active treatment progressors. The dot plot shows all 120
 and the medians in red. Same data, opposite amount of information.
 :::
 
@@ -205,7 +205,7 @@ Rule 02 [VDQI, p. 96 — data-ink is ink that would change if the data changed]{
 ggplot(km0, aes(time, surv, colour = trt)) +
   geom_step(linewidth = 0.7) +
   scale_colour_manual(NULL, values = c(pal$ink, pal$g3),
-                      labels = c("meriplatinib", "placebo")) +
+                      labels = c("active treatment", "placebo")) +
   scale_x_continuous(breaks = 0:12 * 2, minor_breaks = 0:24) +
   scale_y_continuous(breaks = 0:10 / 10) +
   labs(title = "Kaplan-Meier plot of PFS", x = "Time (months)", y = "PFS") +
@@ -238,9 +238,9 @@ ggplot(km0, aes(time, surv, group = trt)) +
   geom_step(aes(colour = trt), linewidth = 0.7) +
   scale_colour_manual(values = c(pal$ink, pal$g2)) +
   annotate("text", x = curve_ends$time + 0.5, y = curve_ends$surv,
-           label = c("meriplatinib", "placebo"), hjust = 0,
+           label = c("active treatment", "placebo"), hjust = 0,
            family = "Charter", size = 3.6, colour = c(pal$ink, pal$g3)) +
-  scale_x_continuous(breaks = c(0, 12, 24), limits = c(0, 29.5)) +
+  scale_x_continuous(breaks = c(0, 12, 24), limits = c(0, 33.5)) +
   scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1)) +
   labs(x = "months", y = "PFS") +
   theme_tufte(15)
@@ -298,13 +298,13 @@ ggplot(km0, aes(time, surv, group = trt)) +
            label = sprintf("median %.1f mo", med[1])) +
   annotate("text", x = curve_ends$time[1] + 0.5,
            y = curve_ends$surv[1] + 0.03,
-           label = "meriplatinib", hjust = 0, family = "Charter",
+           label = "active treatment", hjust = 0, family = "Charter",
            size = 3.6, colour = pal$ink) +
   annotate("text", x = curve_ends$time[2] + 0.5,
            y = curve_ends$surv[2] - 0.01,
            label = sprintf("placebo\nmedian %.1f mo", med[2]), hjust = 0,
            family = "Charter", size = 3.6, colour = pal$g3, lineheight = 0.95) +
-  geom_text(data = filter(atrisk, trt == "meriplatinib 20 mg"),
+  geom_text(data = filter(atrisk, trt == "active treatment"),
             aes(month, -0.24, label = n_at_risk), family = "Menlo",
             size = 2.9, colour = pal$g3) +
   geom_text(data = filter(atrisk, trt == "placebo"),
@@ -312,8 +312,8 @@ ggplot(km0, aes(time, surv, group = trt)) +
             size = 2.9, colour = pal$g2) +
   annotate("text", x = -1.6, y = c(-0.24, -0.34), hjust = 1, family = "Menlo",
            size = 2.9, colour = c(pal$g3, pal$g2),
-           label = c("at risk  mer", "plc")) +
-  scale_x_continuous(breaks = c(0, 6, 12, 18, 24), limits = c(-3.5, 30.5)) +
+           label = c("at risk  act", "plc")) +
+  scale_x_continuous(breaks = c(0, 6, 12, 18, 24), limits = c(-3.5, 34.5)) +
   scale_y_continuous(breaks = c(0, 0.5, 1)) +
   coord_cartesian(ylim = c(0, 1), clip = "off") +
   labs(x = NULL, y = "PFS") +
@@ -349,7 +349,7 @@ ggplot(orr, aes(trt, orr, fill = trt)) +
   geom_col(width = 0.5, colour = "grey25") +
   geom_text(aes(label = sprintf("%.1f%%", orr)), vjust = -0.6, size = 3.6) +
   scale_y_continuous(breaks = 0:9 * 5, limits = c(0, 48)) +
-  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  scale_x_discrete(labels = c("active treatment", "placebo")) +
   labs(title = "Overall response rate", x = NULL, y = "ORR (%)") +
   theme_junk(15)
 ```
@@ -363,7 +363,7 @@ ggplot(orr, aes(trt, orr)) +
             family = "Menlo", size = 3.6,
             colour = c(pal$accent, pal$ink)) +
   scale_y_continuous(breaks = c(0, 45), limits = c(0, 48)) +
-  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  scale_x_discrete(labels = c("active treatment", "placebo")) +
   labs(title = "Overall response rate (%)", x = NULL, y = NULL) +
   theme_tufte(15)
 ```
@@ -395,7 +395,7 @@ Rule 05 [Lie factor = visual effect ÷ data effect. Keep it between 0.95 and 1.0
 ggplot(orr, aes(trt, orr, fill = trt)) +
   geom_col(width = 0.5, colour = "grey25") +
   coord_cartesian(ylim = c(35, 45)) +
-  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  scale_x_discrete(labels = c("active treatment", "placebo")) +
   labs(title = "Overall response rate (%)", x = NULL, y = NULL) +
   theme_junk(15)
 ```
@@ -405,7 +405,7 @@ ggplot(orr, aes(trt, orr, fill = trt)) +
 ```{r orrgood, fig.width=5.2, fig.height=3.6}
 ggplot(orr, aes(trt, orr)) +
   geom_col(width = 0.5, fill = c(pal$accent, pal$g2)) +
-  scale_x_discrete(labels = c("meriplatinib", "placebo")) +
+  scale_x_discrete(labels = c("active treatment", "placebo")) +
   scale_y_continuous(limits = c(0, 48), breaks = c(0, 20, 40)) +
   labs(title = "Overall response rate (%)", x = NULL, y = NULL) +
   theme_tufte(15)
@@ -440,7 +440,7 @@ Rule 06 [VDQI, p. 67 — "Compared to what?"]{}
 ```{r labsoverlay, fig.width=5.2, fig.height=3.9}
 ggplot(lab_means, aes(week, pchg, colour = analyte, linetype = trt)) +
   geom_line(linewidth = 0.8) +
-  scale_linetype_discrete(NULL, labels = c("meriplatinib", "placebo")) +
+  scale_linetype_discrete(NULL, labels = c("active treatment", "placebo")) +
   # legend order is not guaranteed across sessions unless pinned
   guides(linetype = guide_legend(order = 1),
          colour = guide_legend(order = 2)) +
@@ -463,7 +463,7 @@ lab_means <- lab_means |>
 lab_end <- filter(lab_means, week == 26, trt != "placebo")
 arm_labels <- data.frame(
   week = c(11, 15), pchg = c(13, -4.5),
-  lab = c("meriplatinib", "placebo"),
+  lab = c("active treatment", "placebo"),
   analyte = factor("ALT", levels = levels(lab_means$analyte)),
   key = NA, col = c("focal", "plc")
 )
@@ -488,7 +488,7 @@ ggplot(lab_means, aes(week, pchg, group = key, colour = col)) +
 ::: {.caption}
 Mean % change from baseline, six labs, two arms. On the left the ALT signal is
 one strand in a twelve-line knot with a two-part legend. On the right, six
-panels on one shared scale, meriplatinib in ink, placebo in gray; the ALT
+panels on one shared scale, active treatment in ink, placebo in gray; the ALT
 climb to +24% is the safety story, so ALT alone carries the accent.
 :::
 
@@ -570,7 +570,7 @@ ggplot(egfr_means, aes(week, mean_egfr)) +
   geom_line(colour = "grey15", linewidth = 0.9) +
   geom_point(size = 2, colour = "grey15") +
   scale_y_continuous(limits = c(30, 115)) +
-  labs(title = "Mean eGFR over time (meriplatinib arm)",
+  labs(title = "Mean eGFR over time (active treatment arm)",
        x = "Week", y = "eGFR (mean ± SE)") +
   theme_junk(15)
 ```
@@ -601,7 +601,7 @@ ggplot(egfr, aes(week, egfr, group = usubjid)) +
 ::::
 
 ::: {.caption}
-eGFR, meriplatinib arm, 30 patients over 26 weeks, same y scale in both
+eGFR, active treatment arm, 30 patients over 26 weeks, same y scale in both
 panels. The mean is flat, and the left panel ends the story there. The right
 panel keeps the macro reading (a stable band) and adds the micro one: three
 patients decline more than 30%, one past 40%, in red. Means can be stable
@@ -685,7 +685,7 @@ ggplot(forest, aes(hr, row)) +
            family = "Menlo", size = 2.9, colour = pal$muted, hjust = 1) +
   annotate("text", x = c(0.93, 1.08), y = 0.25, hjust = c(1, 0),
            family = "Menlo", size = 2.9, colour = pal$muted,
-           label = c("← favors meriplatinib", "favors placebo →")) +
+           label = c("← favors active treatment", "favors placebo →")) +
   scale_colour_manual(values = c(`TRUE` = pal$accent, `FALSE` = pal$ink)) +
   scale_size_manual(values = c(`TRUE` = 2.6, `FALSE` = 1.7)) +
   scale_x_log10(breaks = c(0.5, 1), limits = c(0.14, 2.05)) +
@@ -726,7 +726,7 @@ The kill list, drawn [1 of 3]{}
 ggplot(bor, aes(x = "", y = n, fill = response)) +
   geom_col(width = 1, colour = "white") +
   coord_polar(theta = "y") +
-  labs(title = "Best overall response, meriplatinib arm",
+  labs(title = "Best overall response, active treatment arm",
        fill = NULL, x = NULL, y = NULL) +
   theme_grey(15, base_family = "Helvetica") +
   theme(axis.text = element_blank(), axis.ticks = element_blank(),
@@ -751,7 +751,7 @@ ggplot(bor, aes(n, response)) +
             hjust = 0, nudge_x = 0.5, family = "Menlo", size = 3.1) +
   scale_colour_manual(values = c(`TRUE` = pal$accent, `FALSE` = pal$ink)) +
   scale_x_continuous(limits = c(0, 27), breaks = NULL) +
-  labs(title = "Best overall response, meriplatinib arm (n = 60)",
+  labs(title = "Best overall response, active treatment arm (n = 60)",
        x = NULL, y = NULL) +
   theme_tufte(15) +
   theme(axis.line = element_blank(), axis.ticks = element_blank(),

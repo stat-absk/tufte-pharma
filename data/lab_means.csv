@@ -1,11 +1,11 @@
 "analyte","week","trt","pchg"
-"ALT",0,"meriplatinib 20 mg",0
-"ALT",2,"meriplatinib 20 mg",4
-"ALT",4,"meriplatinib 20 mg",9
-"ALT",8,"meriplatinib 20 mg",14
-"ALT",12,"meriplatinib 20 mg",18
-"ALT",18,"meriplatinib 20 mg",22
-"ALT",26,"meriplatinib 20 mg",24
+"ALT",0,"active treatment",0
+"ALT",2,"active treatment",4
+"ALT",4,"active treatment",9
+"ALT",8,"active treatment",14
+"ALT",12,"active treatment",18
+"ALT",18,"active treatment",22
+"ALT",26,"active treatment",24
 "ALT",0,"placebo",0
 "ALT",2,"placebo",1
 "ALT",4,"placebo",2
@@ -13,13 +13,13 @@
 "ALT",12,"placebo",2
 "ALT",18,"placebo",3
 "ALT",26,"placebo",2
-"AST",0,"meriplatinib 20 mg",0
-"AST",2,"meriplatinib 20 mg",3
-"AST",4,"meriplatinib 20 mg",6
-"AST",8,"meriplatinib 20 mg",9
-"AST",12,"meriplatinib 20 mg",12
-"AST",18,"meriplatinib 20 mg",14
-"AST",26,"meriplatinib 20 mg",15
+"AST",0,"active treatment",0
+"AST",2,"active treatment",3
+"AST",4,"active treatment",6
+"AST",8,"active treatment",9
+"AST",12,"active treatment",12
+"AST",18,"active treatment",14
+"AST",26,"active treatment",15
 "AST",0,"placebo",0
 "AST",2,"placebo",1
 "AST",4,"placebo",1
@@ -27,13 +27,13 @@
 "AST",12,"placebo",2
 "AST",18,"placebo",2
 "AST",26,"placebo",3
-"ALP",0,"meriplatinib 20 mg",0
-"ALP",2,"meriplatinib 20 mg",1
-"ALP",4,"meriplatinib 20 mg",2
-"ALP",8,"meriplatinib 20 mg",3
-"ALP",12,"meriplatinib 20 mg",4
-"ALP",18,"meriplatinib 20 mg",4
-"ALP",26,"meriplatinib 20 mg",5
+"ALP",0,"active treatment",0
+"ALP",2,"active treatment",1
+"ALP",4,"active treatment",2
+"ALP",8,"active treatment",3
+"ALP",12,"active treatment",4
+"ALP",18,"active treatment",4
+"ALP",26,"active treatment",5
 "ALP",0,"placebo",0
 "ALP",2,"placebo",1
 "ALP",4,"placebo",1
@@ -41,13 +41,13 @@
 "ALP",12,"placebo",2
 "ALP",18,"placebo",3
 "ALP",26,"placebo",3
-"Bilirubin",0,"meriplatinib 20 mg",0
-"Bilirubin",2,"meriplatinib 20 mg",1
-"Bilirubin",4,"meriplatinib 20 mg",3
-"Bilirubin",8,"meriplatinib 20 mg",4
-"Bilirubin",12,"meriplatinib 20 mg",4
-"Bilirubin",18,"meriplatinib 20 mg",5
-"Bilirubin",26,"meriplatinib 20 mg",5
+"Bilirubin",0,"active treatment",0
+"Bilirubin",2,"active treatment",1
+"Bilirubin",4,"active treatment",3
+"Bilirubin",8,"active treatment",4
+"Bilirubin",12,"active treatment",4
+"Bilirubin",18,"active treatment",5
+"Bilirubin",26,"active treatment",5
 "Bilirubin",0,"placebo",0
 "Bilirubin",2,"placebo",0
 "Bilirubin",4,"placebo",1
@@ -55,13 +55,13 @@
 "Bilirubin",12,"placebo",2
 "Bilirubin",18,"placebo",2
 "Bilirubin",26,"placebo",2
-"Creatinine",0,"meriplatinib 20 mg",0
-"Creatinine",2,"meriplatinib 20 mg",2
-"Creatinine",4,"meriplatinib 20 mg",4
-"Creatinine",8,"meriplatinib 20 mg",6
-"Creatinine",12,"meriplatinib 20 mg",7
-"Creatinine",18,"meriplatinib 20 mg",8
-"Creatinine",26,"meriplatinib 20 mg",9
+"Creatinine",0,"active treatment",0
+"Creatinine",2,"active treatment",2
+"Creatinine",4,"active treatment",4
+"Creatinine",8,"active treatment",6
+"Creatinine",12,"active treatment",7
+"Creatinine",18,"active treatment",8
+"Creatinine",26,"active treatment",9
 "Creatinine",0,"placebo",0
 "Creatinine",2,"placebo",1
 "Creatinine",4,"placebo",1
@@ -69,13 +69,13 @@
 "Creatinine",12,"placebo",2
 "Creatinine",18,"placebo",2
 "Creatinine",26,"placebo",2
-"Hemoglobin",0,"meriplatinib 20 mg",0
-"Hemoglobin",2,"meriplatinib 20 mg",-2
-"Hemoglobin",4,"meriplatinib 20 mg",-4
-"Hemoglobin",8,"meriplatinib 20 mg",-5
-"Hemoglobin",12,"meriplatinib 20 mg",-6
-"Hemoglobin",18,"meriplatinib 20 mg",-6
-"Hemoglobin",26,"meriplatinib 20 mg",-6
+"Hemoglobin",0,"active treatment",0
+"Hemoglobin",2,"active treatment",-2
+"Hemoglobin",4,"active treatment",-4
+"Hemoglobin",8,"active treatment",-5
+"Hemoglobin",12,"active treatment",-6
+"Hemoglobin",18,"active treatment",-6
+"Hemoglobin",26,"active treatment",-6
 "Hemoglobin",0,"placebo",0
 "Hemoglobin",2,"placebo",-1
 "Hemoglobin",4,"placebo",-1

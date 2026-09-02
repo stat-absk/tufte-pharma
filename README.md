@@ -1,4 +1,4 @@
-# Show every patient
+# Data visualizations based on Tufte's principles
 
 **[View the slides](https://stat-absk.github.io/slides/tufte-pharma.html)**
 
@@ -11,7 +11,7 @@ drawn the same way (response pie, dual-axis overlay, rainbow heatmap), and a
 pre-ship checklist.
 
 Every figure comes from two invented studies (MER-201, a phase 2 trial of
-meriplatinib vs placebo; MER-102, a phase 1b dose-finding study) so the
+active treatment vs placebo; MER-102, a phase 1b dose-finding study) so the
 numbers reconcile across slides. Nothing is real.
 
 ## Build

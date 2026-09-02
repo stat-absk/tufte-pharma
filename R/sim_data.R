@@ -1,5 +1,5 @@
 # Simulate the fictional studies behind the deck and write them to data/.
-# MER-201: phase 2, meriplatinib 20 mg vs placebo, N = 240, primary endpoint PFS.
+# MER-201: phase 2, active treatment vs placebo, N = 240, primary endpoint PFS.
 # MER-102: phase 1b dose-finding (placebo, 10 mg, 20 mg).
 # Every number is invented. Run once; the qmd reads the CSVs.
 # Base write.csv on purpose: reruns must be byte-identical, so the RNG call
@@ -39,7 +39,7 @@ active  <- sim_arm(16.5, 120)
 placebo <- sim_arm(12.0, 120)
 adtte <- rbind(
   data.frame(usubjid = sprintf("MER201-%04d", 1:120),
-             trt = "meriplatinib 20 mg", active),
+             trt = "active treatment", active),
   data.frame(usubjid = sprintf("MER201-%04d", 121:240),
              trt = "placebo", placebo)
 )
@@ -51,13 +51,13 @@ message("KM medians: ", round(km_median(active), 1), " / ",
 set.seed(77)
 clip <- function(x) pmax(-72, pmin(58, x))
 tumor <- rbind(
-  data.frame(trt = "meriplatinib 20 mg", pchg = clip(rnorm(60, -21.5, 26))),
+  data.frame(trt = "active treatment", pchg = clip(rnorm(60, -21.5, 26))),
   data.frame(trt = "placebo",            pchg = clip(rnorm(60,  -3.0, 21)))
 )
 write.csv(tumor, "data/tumor_wk12.csv", row.names = FALSE)
 
 # ORR (for the lie-factor slide) ----
-write.csv(data.frame(trt = c("meriplatinib 20 mg", "placebo"),
+write.csv(data.frame(trt = c("active treatment", "placebo"),
                      orr = c(42.3, 38.1)),
           "data/orr.csv", row.names = FALSE)
 
@@ -66,7 +66,7 @@ weeks <- c(0, 2, 4, 8, 12, 18, 26)
 lab_arm_rows <- function(analyte, active_pchg, placebo_pchg) {
   rbind(
     data.frame(analyte = analyte, week = weeks,
-               trt = "meriplatinib 20 mg", pchg = active_pchg),
+               trt = "active treatment", pchg = active_pchg),
     data.frame(analyte = analyte, week = weeks,
                trt = "placebo", pchg = placebo_pchg)
   )
@@ -81,7 +81,7 @@ lab_means <- rbind(
 )
 write.csv(lab_means, "data/lab_means.csv", row.names = FALSE)
 
-# eGFR, subject level, meriplatinib arm ----
+# eGFR, subject level, active treatment arm ----
 # 30 patients drift gently; 3 decline past -30% (one steeply, the focal patient).
 set.seed(11)
 egfr <- do.call(rbind, lapply(1:30, function(i) {
@@ -127,7 +127,7 @@ forest <- data.frame(
 write.csv(forest, "data/forest.csv", row.names = FALSE)
 message("data/ written")
 
-# Best overall response, meriplatinib arm (for the pie-chart kill) ----
+# Best overall response, active treatment arm (for the pie-chart kill) ----
 bor <- data.frame(
   response = c("Partial response", "Stable disease", "Progressive disease",
                "Complete response", "Not evaluable"),
