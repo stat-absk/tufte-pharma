@@ -4,8 +4,9 @@
 
 A 15-minute Quarto presentation on Edward Tufte's principles for the figures
 in a clinical study report, aimed at clinical statisticians. Nineteen slides:
-all ten of Tufte's rules, each demonstrated as a side-by-side pair (the junk
-version on the left, the revised version on the right), then a kill list
+all ten of Tufte's rules, demonstrated as side-by-side pairs (the junk
+version on the left, the revised version on the right; rule 10 stands alone,
+since nobody draws the junk version of a forest plot), then a kill list
 drawn the same way (response pie, dual-axis overlay, rainbow heatmap), and a
 pre-ship checklist.
 

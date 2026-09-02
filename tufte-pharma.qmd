@@ -64,9 +64,9 @@ A working deck [MER-201 and MER-102 are invented studies. The rules are not.]{}
 
 ::: {.lede}
 Edward Tufte's ten rules for data graphics, each demonstrated on a figure a
-clinical statistician actually makes, junk version on the left, revised
-version on the right. Then the kill list, drawn the same way, and the checks
-to run before a figure goes in the CSR.
+clinical statistician actually makes, almost always as a pair: the junk
+version on the left, the revised version on the right. Then the kill list,
+drawn the same way, and the checks to run before a figure goes in the CSR.
 :::
 
 ```{r cover, fig.width=11.4, fig.height=3.2}
@@ -355,11 +355,9 @@ ggplot(orr, aes(trt, orr, fill = trt)) +
 ```
 :::
 ::: {.column width="50%"}
-[42.3, said once]{.panel-lab}
+[Position once, decimals printed]{.panel-lab}
 ```{r once, fig.width=5.2, fig.height=3.9}
 ggplot(orr, aes(trt, orr)) +
-  geom_segment(aes(xend = trt, y = 0, yend = orr), colour = pal$g2,
-               linewidth = 0.4) +
   geom_point(size = 3, colour = c(pal$accent, pal$ink)) +
   geom_text(aes(label = sprintf("%.1f%%", orr)), vjust = -1.1,
             family = "Menlo", size = 3.6,
@@ -463,10 +461,18 @@ lab_means <- lab_means |>
                          analyte == "ALT" ~ "focal",
                          .default = "act"))
 lab_end <- filter(lab_means, week == 26, trt != "placebo")
+arm_labels <- data.frame(
+  week = c(11, 15), pchg = c(13, -4.5),
+  lab = c("meriplatinib", "placebo"),
+  analyte = factor("ALT", levels = levels(lab_means$analyte)),
+  key = NA, col = c("focal", "plc")
+)
 ggplot(lab_means, aes(week, pchg, group = key, colour = col)) +
   geom_hline(yintercept = 0, colour = pal$g1, linewidth = 0.4) +
   geom_line(linewidth = 0.6) +
   geom_point(data = lab_end, size = 1.3) +
+  geom_text(data = arm_labels, aes(label = lab), family = "Charter",
+            size = 2.9, hjust = 0) +
   scale_colour_manual(values = c(plc = pal$g2, act = pal$ink,
                                  focal = pal$accent)) +
   facet_wrap(~analyte, nrow = 2) +
@@ -661,24 +667,7 @@ red against green alone fails for roughly 8% of men.
 Rule 10 [The forest plot is the most Tufte figure in the CSR: a table and a graphic, fused]{}
 :::
 
-:::: {.columns}
-::: {.column width="40%"}
-[The graphic apart from its table]{.panel-lab .bad}
-```{r hrbars, fig.width=4.4, fig.height=3.9}
-forest$subgroup <- factor(forest$subgroup, levels = forest$subgroup)
-ggplot(forest, aes(subgroup, hr, fill = subgroup)) +
-  geom_col(width = 0.6, colour = "grey25") +
-  geom_hline(yintercept = 1, linetype = "dashed", colour = "grey25") +
-  labs(title = "HR by subgroup (see Table 14.2.4)",
-       x = NULL, y = "Hazard ratio") +
-  theme_junk(15) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7),
-        legend.position = "none")
-```
-:::
-::: {.column width="60%"}
-[Label, n, number, picture: one row]{.panel-lab}
-```{r forest, fig.width=6.8, fig.height=3.9}
+```{r forest, fig.width=11.4, fig.height=4.4}
 forest$row <- rev(seq_len(nrow(forest)))
 forest$focal <- forest$subgroup == "Overall"
 ggplot(forest, aes(hr, row)) +
@@ -687,41 +676,40 @@ ggplot(forest, aes(hr, row)) +
   geom_segment(aes(x = lo, xend = hi, yend = row,
                    colour = focal), linewidth = 0.5) +
   geom_point(aes(size = focal, colour = focal)) +
-  geom_text(aes(x = 0.208, label = n), family = "Menlo", size = 2.9,
+  geom_text(aes(x = 0.208, label = n), family = "Menlo", size = 3.1,
             colour = pal$g3, hjust = 1) +
   geom_text(aes(x = 2.05, label = sprintf("%.2f (%.2f–%.2f)", hr, lo, hi),
                 colour = focal),
-            family = "Menlo", size = 2.9, hjust = 1) +
+            family = "Menlo", size = 3.1, hjust = 1) +
   annotate("text", x = c(0.208, 2.05), y = 9.9, label = c("n", "HR (95% CI)"),
-           family = "Menlo", size = 2.7, colour = pal$muted, hjust = 1) +
+           family = "Menlo", size = 2.9, colour = pal$muted, hjust = 1) +
   annotate("text", x = c(0.93, 1.08), y = 0.25, hjust = c(1, 0),
-           family = "Menlo", size = 2.7, colour = pal$muted,
+           family = "Menlo", size = 2.9, colour = pal$muted,
            label = c("← favors meriplatinib", "favors placebo →")) +
   scale_colour_manual(values = c(`TRUE` = pal$accent, `FALSE` = pal$ink)) +
-  scale_size_manual(values = c(`TRUE` = 2.4, `FALSE` = 1.6)) +
+  scale_size_manual(values = c(`TRUE` = 2.6, `FALSE` = 1.7)) +
   scale_x_log10(breaks = c(0.5, 1), limits = c(0.14, 2.05)) +
   scale_y_continuous(breaks = forest$row, labels = forest$subgroup) +
   coord_cartesian(clip = "off") +
   labs(x = "hazard ratio, log scale", y = NULL) +
   theme_tufte(15) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank(),
-        axis.text.y = element_text(family = "Charter", size = 10,
+        axis.text.y = element_text(family = "Charter", size = 11,
                                    colour = pal$ink, hjust = 0),
-        plot.margin = margin(16, 8, 8, 8))
+        plot.margin = margin(18, 8, 8, 8))
 ```
-:::
-::::
 
 ::: {.caption}
-PFS by subgroup. The left panel commits three sins at once: bars for ratios
-(a ratio has no zero to grow from), no intervals, and the numbers exiled to a
-table four pages away. In the forest plot, label, n, estimate and picture
-share each row; the prior platinum CI crossing 1 is legible without a
-footnote.
+PFS by subgroup, MER-201. Label, n, estimate and picture share each row; the
+eye never leaves the line it is reading. No legend, no second panel, no page
+flip to Table 14.2.4. The point sits on a log scale where a ratio belongs,
+the interval is drawn rather than footnoted, and the prior platinum CI
+crossing 1 is legible at a glance.
 :::
 
 ::: notes
-1.5 min. Same principle at smaller scale: sparklines beside numbers in
+1.5 min. No junk twin here: nobody draws an HR bar chart, and the forest plot
+needs no foil. Same principle at smaller scale: sparklines beside numbers in
 demographic tables; a number in a sentence can carry its shape with it.
 :::
 
@@ -920,7 +908,7 @@ fix and does as much work as the color change.
 | Legend far from the curves | Direct labels at line ends | Rules 3, 9 |
 | Grid and frame at data weight | Faint gray, or nothing | Rules 2, 7 |
 | Truncated bar axes | Zero base, or the number with its CI | Rule 5 |
-| Bars for ratios | A point with an interval on a log scale | Rule 10 |
+| Bars for ratios | A point with an interval on a log scale | the fix, rule 10 |
 | 3D anything | The 2D version | never drawn, on purpose |
 | Subgroup panels on mixed scales | One shared scale | Rules 6, 8 |
 | "approximately ~42%" | "42.3%" | every caption |
