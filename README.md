@@ -3,12 +3,12 @@
 **[View the slides](https://stat-absk.github.io/slides/tufte-pharma.html)**
 
 A 15-minute Quarto presentation on Edward Tufte's principles for the figures
-in a clinical study report, aimed at clinical statisticians. Nineteen slides:
+in a clinical study report, aimed at clinical statisticians. Sixteen slides:
 all ten of Tufte's rules, demonstrated as side-by-side pairs (the junk
-version on the left, the revised version on the right; rule 10 stands alone,
-since nobody draws the junk version of a forest plot), then a kill list
-drawn the same way (response pie, dual-axis overlay, rainbow heatmap), and a
-pre-ship checklist.
+version on the left, the revised version on the right; rules 2+3 and 4+5
+each share a slide, and rule 10 stands alone, since nobody draws the junk
+version of a forest plot), then a kill list drawn the same way (response
+pie, dual-axis overlay, rainbow heatmap), and a pre-ship checklist.
 
 Every figure comes from two invented studies (MER-201, a phase 2 trial of
 active treatment vs placebo; MER-102, a phase 1b dose-finding study) so the

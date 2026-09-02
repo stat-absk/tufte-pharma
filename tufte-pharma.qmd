@@ -111,10 +111,10 @@ Every mark that is not data costs them attention they were saving for the data.
 |    | Rule | Figure it fixes |
 |----|------|-----------------|
 | 1  | Show the data | The dynamite plot |
-| 2  | Maximize the data-ink ratio | The KM plot, audited |
+| 2  | Maximize the data-ink ratio | The default KM plot |
 | 3  | Erase non-data-ink | The default KM plot |
-| 4  | Erase redundant data-ink | The ORR bar, said once |
-| 5  | Keep graphical integrity | The truncated axis |
+| 4  | Erase redundant data-ink | The truncated ORR bar |
+| 5  | Keep graphical integrity | The truncated ORR bar |
 
 : {tbl-colwidths="[8,50,42]"}
 :::
@@ -192,80 +192,10 @@ least informative. Point at the placebo patients below -30%: invisible on the
 left.
 :::
 
-## Rule 2 · Maximize the data-ink ratio
+## Rules 2 + 3 · Maximize data-ink, erase the rest
 
 ::: {.eyebrow}
-Rule 02 [VDQI, p. 96 — data-ink is ink that would change if the data changed]{}
-:::
-
-:::: {.columns}
-::: {.column width="50%"}
-[Non-data-ink, painted red]{.panel-lab .bad}
-```{r inkaudit, fig.width=5.2, fig.height=3.9}
-ggplot(km0, aes(time, surv, colour = trt)) +
-  geom_step(linewidth = 0.7) +
-  scale_colour_manual(NULL, values = c(pal$ink, pal$g3),
-                      labels = c("active treatment", "placebo")) +
-  scale_x_continuous(breaks = 0:12 * 2, minor_breaks = 0:24) +
-  scale_y_continuous(breaks = 0:10 / 10) +
-  labs(title = "Kaplan-Meier plot of PFS", x = "Time (months)", y = "PFS") +
-  theme_minimal(15, base_family = "Charter") +
-  theme(
-    plot.background  = element_rect(fill = pal$paper, colour = NA),
-    panel.grid.major = element_line(colour = pal$accent, linewidth = 0.3),
-    panel.grid.minor = element_line(colour = pal$accent, linewidth = 0.15),
-    panel.border     = element_rect(colour = pal$accent, fill = NA,
-                                    linewidth = 0.8),
-    axis.ticks       = element_line(colour = pal$accent, linewidth = 0.5),
-    axis.ticks.length = unit(4, "pt"),
-    axis.text        = element_text(family = "Menlo", size = 8,
-                                    colour = pal$g3),
-    axis.title       = element_text(family = "Menlo", size = 9,
-                                    colour = pal$muted),
-    plot.title       = element_text(family = "Menlo", size = 10,
-                                    colour = pal$muted),
-    legend.background = element_rect(colour = pal$accent, fill = pal$paper),
-    legend.text      = element_text(size = 9),
-    legend.position  = c(0.8, 0.85)
-  )
-```
-:::
-::: {.column width="50%"}
-[Only ink the data can move]{.panel-lab}
-```{r inkonly, fig.width=5.2, fig.height=3.9}
-curve_ends <- km0 |> slice_tail(n = 1, by = trt)
-ggplot(km0, aes(time, surv, group = trt)) +
-  geom_step(aes(colour = trt), linewidth = 0.7) +
-  scale_colour_manual(values = c(pal$ink, pal$g2)) +
-  annotate("text", x = curve_ends$time + 0.5, y = curve_ends$surv,
-           label = c("active treatment", "placebo"), hjust = 0,
-           family = "Charter", size = 3.6, colour = c(pal$ink, pal$g3)) +
-  scale_x_continuous(breaks = c(0, 12, 24), limits = c(0, 33.5)) +
-  scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1)) +
-  labs(x = "months", y = "PFS") +
-  theme_tufte(15)
-```
-:::
-::::
-
-::: {.caption}
-The audit: change every event time in the dataset and ask what moves. The
-curves move. Nothing red does: not the frame, the grid, the minor ticks, the
-legend box. The right panel keeps the curves, three ticks per axis, and two
-names. The ratio of ink that works to ink that sits went from roughly a third
-to nearly all of it.
-:::
-
-::: notes
-0.5 min. This is the test to run on any figure: would this mark change if the
-data changed? Red here is a teaching device; the accent never goes on
-furniture in a real figure.
-:::
-
-## Rule 3 · Erase non-data-ink
-
-::: {.eyebrow}
-Rule 03 [VDQI, p. 96 — border, legend, grid, minor ticks, in that order]{}
+Rules 02 + 03 [VDQI, p. 96 — data-ink is ink that would change if the data changed]{}
 :::
 
 :::: {.columns}
@@ -286,6 +216,7 @@ ggplot(km0, aes(time, surv, colour = trt)) +
 ::: {.column width="50%"}
 [After erasure]{.panel-lab}
 ```{r kmgood, fig.width=5.2, fig.height=3.9}
+curve_ends <- km0 |> slice_tail(n = 1, by = trt)
 ggplot(km0, aes(time, surv, group = trt)) +
   geom_step(aes(colour = trt), linewidth = 0.7) +
   geom_point(data = filter(km0, ncens > 0), aes(colour = trt),
@@ -324,9 +255,11 @@ ggplot(km0, aes(time, surv, group = trt)) +
 ::::
 
 ::: {.caption}
-Erasure order: frame box, grid, legend, minor ticks. What replaced them is
-data: direct labels, censor marks, medians where they occur, and the at-risk
-counts, which are the honest width of the right-hand tail.
+The audit behind both rules: change every event time and ask what moves. The
+curves move; the frame, grid, legend and minor ticks do not, and they are
+erased in that order. What replaced them is data: direct labels, censor
+marks, medians where they occur, and the at-risk counts, which are the
+honest width of the right-hand tail.
 :::
 
 ::: notes
@@ -335,20 +268,20 @@ memory. The at-risk table is not decoration; past month 18 both curves stand
 on fewer than 35 patients.
 :::
 
-## Rule 4 · Erase redundant data-ink
+## Rules 4 + 5 · Say it once, draw it honestly
 
 ::: {.eyebrow}
-Rule 04 [VDQI, p. 100 — one encoding per quantity]{}
+Rules 04 + 05 [VDQI, p. 100 — one encoding per quantity, and a lie factor between 0.95 and 1.05]{}
 :::
 
 :::: {.columns}
 ::: {.column width="50%"}
-[42.3, said five ways]{.panel-lab .bad}
-```{r redundant, fig.width=5.2, fig.height=3.9}
+[Five statements, drawn 12x too big]{.panel-lab .bad}
+```{r orrjunk, fig.width=5.2, fig.height=3.9}
 ggplot(orr, aes(trt, orr, fill = trt)) +
   geom_col(width = 0.5, colour = "grey25") +
   geom_text(aes(label = sprintf("%.1f%%", orr)), vjust = -0.6, size = 3.6) +
-  scale_y_continuous(breaks = 0:9 * 5, limits = c(0, 48)) +
+  coord_cartesian(ylim = c(35, 45.5)) +
   scale_x_discrete(labels = c("active treatment", "placebo")) +
   labs(title = "Overall response rate", x = NULL, y = "ORR (%)") +
   theme_junk(15)
@@ -371,61 +304,19 @@ ggplot(orr, aes(trt, orr)) +
 ::::
 
 ::: {.caption}
-The left bar states 42.3 five times: top-edge position, fill height, printed
-label, the gridline it touches, the axis tick beside it. Five statements of
-one number are not clearer, they are louder. The right panel keeps two: the
-dot's position, and the printed value for the reader who needs the decimals.
+The left panel breaks both rules at once. The bar states 42.3 five ways:
+top-edge position, fill height, printed label, the gridline it touches, the
+axis tick beside it. And its axis starts at 35, so an 11% relative difference
+is drawn as 135%, a lie factor of 12. The right panel says each number once,
+as position on a scale anchored at zero, with the decimals printed for the
+reader who needs them.
 :::
 
 ::: notes
-0.5 min. A number plus a sparkline is two encodings doing different work.
-A bar plus its own label plus a grid is one encoding shouting.
-:::
-
-## Rule 5 · Never let the picture out-run the number
-
-::: {.eyebrow}
-Rule 05 [Lie factor = visual effect ÷ data effect. Keep it between 0.95 and 1.05]{}
-:::
-
-:::: {.columns}
-::: {.column width="50%"}
-[Axis starts at 35]{.panel-lab .bad}
-```{r orrbad, fig.width=5.2, fig.height=3.6}
-ggplot(orr, aes(trt, orr, fill = trt)) +
-  geom_col(width = 0.5, colour = "grey25") +
-  coord_cartesian(ylim = c(35, 45)) +
-  scale_x_discrete(labels = c("active treatment", "placebo")) +
-  labs(title = "Overall response rate (%)", x = NULL, y = NULL) +
-  theme_junk(15)
-```
-:::
-::: {.column width="50%"}
-[Axis starts at zero]{.panel-lab}
-```{r orrgood, fig.width=5.2, fig.height=3.6}
-ggplot(orr, aes(trt, orr)) +
-  geom_col(width = 0.5, fill = c(pal$accent, pal$g2)) +
-  scale_x_discrete(labels = c("active treatment", "placebo")) +
-  scale_y_continuous(limits = c(0, 48), breaks = c(0, 20, 40)) +
-  labs(title = "Overall response rate (%)", x = NULL, y = NULL) +
-  theme_tufte(15)
-```
-:::
-::::
-
-::: {.caption}
-ORR 42.3% vs 38.1%: an 11% relative difference. The truncated panel draws a
-135% visual difference. Lie factor 12. Bars encode length, so their baseline
-is zero, and per rule 4 the length is said once: the bars carry the
-comparison, this caption carries the decimals. If a difference is only
-visible on a truncated axis, that is the finding, and the honest home for it
-is the number itself with its CI.
-:::
-
-::: notes
-1 min. Also on the lie list: response bubbles scaled by radius, subgroup
-panels on different scales. The dual-axis overlay gets its own slide in the
-kill list.
+1.5 min. Bars encode length, so their baseline is zero; a difference visible
+only on a truncated axis is the finding, and it is reported as the number
+with its CI. A number plus a sparkline is two encodings doing different work;
+a bar plus its own label plus a grid is one encoding shouting.
 :::
 
 ## Rule 6 · Small multiples
@@ -905,9 +796,9 @@ fix and does as much work as the color change.
 |   Kill | Use instead | Shown at |
 |--------|-------------|----------|
 | Dynamite plots | Dots and medians, all patients | Rule 1 |
-| Legend far from the curves | Direct labels at line ends | Rules 3, 9 |
-| Grid and frame at data weight | Faint gray, or nothing | Rules 2, 7 |
-| Truncated bar axes | Zero base, or the number with its CI | Rule 5 |
+| Legend far from the curves | Direct labels at line ends | Rules 2+3, 9 |
+| Grid and frame at data weight | Faint gray, or nothing | Rules 2+3, 7 |
+| Truncated bar axes | Zero base, or the number with its CI | Rules 4+5 |
 | Bars for ratios | A point with an interval on a log scale | the fix, rule 10 |
 | 3D anything | The 2D version | never drawn, on purpose |
 | Subgroup panels on mixed scales | One shared scale | Rules 6, 8 |
