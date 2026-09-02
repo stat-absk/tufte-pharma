@@ -1,7 +1,7 @@
 ---
 title: "Data visualizations based on Tufte's principles"
-subtitle: "Ten rules for the figures in a clinical study report"
-author: "15 minutes, for clinical statisticians"
+subtitle: ""
+author: "Abhishek B"
 format:
   revealjs:
     theme: [default, theme.scss]
