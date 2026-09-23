@@ -5,9 +5,10 @@
 library(ggplot2)
 
 pal <- list(
-  paper  = "#faf8f2",  ink   = "#191710",  rule = "#d5cfbf",
-  muted  = "#7b7568",  g1    = "#e9e5d8",  g2   = "#c2bcab",
-  g3     = "#6d6759",  accent = "#b3261e"
+  # the site's signature, ink on paper: strengths 0.92 / 0.80 / 0.70 / 0.35 / 0.22 / 0.08 of the ink
+  paper  = "#F2F3EA",  ink   = "#0E1412",  rule = "#C0C2BA",
+  muted  = "#525753",  g1    = "#E0E1D9",  g2   = "#A2A59E",
+  g3     = "#3C413D",  accent = "#6E5A16"
 )
 
 theme_tufte <- function(base_size = 16) {

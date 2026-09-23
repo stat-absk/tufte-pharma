@@ -4,7 +4,7 @@ subtitle: ""
 author: "Abhishek B"
 format:
   revealjs:
-    theme: [default, theme.scss]
+    theme: [default, signature-reveal.scss, theme.scss]
     width: 1280
     height: 720
     margin: 0.07
@@ -15,7 +15,7 @@ format:
     hash: true
     embed-resources: true
     title-slide-attributes:
-      data-background-color: "#faf8f2"
+      data-background-color: "#F2F3EA"
 execute:
   echo: false
   warning: false
