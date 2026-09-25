@@ -11,7 +11,6 @@ format:
     center: false
     transition: none
     slide-number: c/t
-    footer: "[stat-absk.github.io](https://stat-absk.github.io/) · [more slides and projects](https://stat-absk.github.io/stuff.html) · Tufte for pharma"
     hash: true
     embed-resources: true
     title-slide-attributes:
